@@ -45,45 +45,61 @@ namespace CourseWork
             //Console.ReadLine();
 
 
-            MongoClient client = new MongoClient("mongodb+srv://sharp:ASDFG12wert@clusterbot-kc2bm.mongodb.net/test?retryWrites=true&w=majority");
+            //MongoClient client = new MongoClient("mongodb+srv://sharp:ASDFG12wert@clusterbot-kc2bm.mongodb.net/test?retryWrites=true&w=majority");
             //SaveDocs(client);
-            FindDocs(client);
-            Console.ReadLine();
-            //var me = botClient.GetMeAsync().Result;
-            //Console.WriteLine(
-            //  $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
-            //);
+            //FindDocs(client);
+            //UpdatePerson(client);
+            //Console.ReadLine();
+            var me = botClient.GetMeAsync().Result;
+            Console.WriteLine(
+              $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
+            );
 
-            //botClient.OnMessage += Bot_OnMessage;
-            //botClient.StartReceiving(); 
-            //botClient.StopReceiving();
+            botClient.OnMessage += Bot_OnMessage;
+            botClient.StartReceiving();
+            Console.ReadLine();
+            botClient.StopReceiving();
         }
 
-        private static async Task FindDocs(MongoClient client)
+        private static async Task UpdatePerson(MongoClient client)
         {
             var database = client.GetDatabase("house");
             var collection = database.GetCollection<BsonDocument>("people");
-            var filter = new BsonDocument("Name", "Nataliy");
-
-            /* Альтернативное решение. Плохо на память влияет(?)
-            var people = await collection.Find(filter).ToListAsync();
-            foreach (var doc in people)
-            {
-                Console.WriteLine(doc);
-            }*/
-
-            using (var cursor = await collection.FindAsync(filter))
-            {
-                while (await cursor.MoveNextAsync())
-                {
-                    var people = cursor.Current;
-                    foreach (var doc in people)
-                    {
-                        Console.WriteLine(doc);
-                    }
-                }
-            }
+            var result = new BsonDocument("Name", "Nataliya");
+            bool exists = await collection.Find(result).AnyAsync();
+            Console.WriteLine(exists);
+            //Console.WriteLine("Найдено по соответствию: {0}; обновлено: {1}",
+            //    result.MatchedCount, result.ModifiedCount);
+            var people = await collection.Find(new BsonDocument()).ToListAsync();
+            foreach (var p in people)
+                Console.WriteLine(p);
         }
+
+        //private static async Task FindDocs(MongoClient client)
+        //{
+        //    var database = client.GetDatabase("house");
+        //    var collection = database.GetCollection<BsonDocument>("people");
+        //    var filter = new BsonDocument("Name", "Nataliy");
+
+        //    /* Альтернативное решение. Плохо на память влияет(?)
+        //    var people = await collection.Find(filter).ToListAsync();
+        //    foreach (var doc in people)
+        //    {
+        //        Console.WriteLine(doc);
+        //    }*/
+
+        //    using (var cursor = await collection.FindAsync(filter))
+        //    {
+        //        while (await cursor.MoveNextAsync())
+        //        {
+        //            var people = cursor.Current;
+        //            foreach (var doc in people)
+        //            {
+        //                Console.WriteLine(doc);
+        //            }
+        //        }
+        //    }
+        //}
 
         //private static async Task SaveDocs(MongoClient client)
         //{
@@ -113,10 +129,11 @@ namespace CourseWork
             {
                 Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}.");
 
-                await botClient.SendTextMessageAsync(
+                var res = await botClient.SendTextMessageAsync(
                   chatId: e.Message.Chat,
                   text: "Я твое эхо и кидаю к тебе стрелки, ха!\n\n" + $"\"{e.Message.Text}\""
                 );
+                await botClient.DeleteMessageAsync(chatId: e.Message.Chat, messageId: res.MessageId);
             }
         }
     }

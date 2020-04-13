@@ -41,10 +41,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.logBot.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.logBot.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.logBot.Location = new System.Drawing.Point(12, 44);
+            this.logBot.Location = new System.Drawing.Point(11, 31);
+            this.logBot.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.logBot.Name = "logBot";
             this.logBot.ReadOnly = true;
-            this.logBot.Size = new System.Drawing.Size(1025, 549);
+            this.logBot.Size = new System.Drawing.Size(765, 447);
             this.logBot.TabIndex = 0;
             this.logBot.Text = "";
             // 
@@ -52,7 +53,8 @@
             // 
             this.labelStopwatch.AutoSize = true;
             this.labelStopwatch.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelStopwatch.Location = new System.Drawing.Point(12, 5);
+            this.labelStopwatch.Location = new System.Drawing.Point(9, 4);
+            this.labelStopwatch.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelStopwatch.Name = "labelStopwatch";
             this.labelStopwatch.Size = new System.Drawing.Size(265, 25);
             this.labelStopwatch.TabIndex = 1;
@@ -62,14 +64,15 @@
             // 
             this.stopwatch.Interval = 1;
             // 
-            // Form1
+            // StartWork
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1049, 605);
+            this.ClientSize = new System.Drawing.Size(787, 492);
             this.Controls.Add(this.labelStopwatch);
             this.Controls.Add(this.logBot);
-            this.Name = "Form1";
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Name = "StartWork";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.ResumeLayout(false);

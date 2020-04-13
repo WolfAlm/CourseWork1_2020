@@ -14,7 +14,9 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using CourseWork_Library;
 using System.IO;
-
+using Telegram.Bot.Types.InputFiles;
+using System.Net;
+using System.Drawing.Imaging;
 
 namespace CourseWorkForm
 {
@@ -22,9 +24,10 @@ namespace CourseWorkForm
     {
         // Определяем текущее время для запуска секундомера.
         DateTime date = DateTime.Now;
+        // Токен бота.
+        private const string tokenBot = "955523636:AAF3THwqIPSRat5q7TZUBow_B8QEvm8zGW8";
         // Создаем бота с нужным токеном бота.
-        private static readonly TelegramBotClient botClient =
-            new TelegramBotClient("955523636:AAF3THwqIPSRat5q7TZUBow_B8QEvm8zGW8");
+        private static readonly TelegramBotClient botClient = new TelegramBotClient(tokenBot);
         // Сохраняем номер ВЕДУЩЕГО сообщения бота. 
         Telegram.Bot.Types.Message messageLast;
 
@@ -50,11 +53,11 @@ namespace CourseWorkForm
         /// Метод обрабатывает все реакции нажатия на кнопки inline от пользователя, после чего, в
         /// зависимости от реакции, выводится необходимая информация и меняется логика.
         /// </summary>
-        /// <param name="e">Пользователь, которого нужно обработать.</param>
-        private async void BotClient_OnCallbackQuery(object sender, CallbackQueryEventArgs e)
+        /// <param name="eventUser">Пользователь, которого нужно обработать.</param>
+        private async void BotClient_OnCallbackQuery(object sender, CallbackQueryEventArgs eventUser)
         {
             // Создаем пользователя на основе сообщения, т.е. мы получаем от базы данных информацию.
-            UserBot user = await WorkWithBD.GetUserAsync(e.CallbackQuery.From.Id, e.CallbackQuery.From.FirstName);
+            UserBot user = await WorkWithBD.GetUserAsync(eventUser.CallbackQuery.From.Id, eventUser.CallbackQuery.From.FirstName);
             //catch (TimeoutException)
             //{
             //    logBot.BeginInvoke((MethodInvoker)(
@@ -65,7 +68,7 @@ namespace CourseWorkForm
             string text;
             InlineKeyboardMarkup keyboard;
 
-            switch (e.CallbackQuery.Data)
+            switch (eventUser.CallbackQuery.Data)
             {
                 // Выбор количества пикселей.
                 case "1":
@@ -78,38 +81,38 @@ namespace CourseWorkForm
                 case "8":
                 case "9":
                 case "10":
-                    saveInfo = e.CallbackQuery.Data;
+                    saveInfo = eventUser.CallbackQuery.Data;
 
-                    LogFromCallback(user, UtilitiesBot.State.S_PickNumberPix, 
+                    LogFromCallback(user, UtilitiesBot.State.S_PickNumberPix,
                         UtilitiesBot.infoText["pickNumberPix"] + $"*{saveInfo}*",
-                        UtilitiesBot.keyboards["pickNumberPix"], e);
+                        UtilitiesBot.keyboards["pickNumberPix"], eventUser);
                     break;
                 // Загрузка фотки.
                 case "upload":
                     LogFromCallback(user, UtilitiesBot.State.S_Upload, UtilitiesBot.infoText["upload"],
-                        UtilitiesBot.keyboards["back"], e);
+                        UtilitiesBot.keyboards["back"], eventUser);
                     break;
                 // Настройки бота.
                 case "settings":
                     LogFromCallback(user, UtilitiesBot.State.S_Settings, UtilitiesBot.infoText["setting"],
-                        UtilitiesBot.keyboards["setting"], e);
+                        UtilitiesBot.keyboards["setting"], eventUser);
                     break;
                 // Выбор количества пикселей.
                 case "numberOfPixels":
                     LogFromCallback(user, UtilitiesBot.State.S_NumberOfPixels,
                         UtilitiesBot.infoText["numberOfPixels"] + user.Settings["amount"],
-                        UtilitiesBot.keyboards["numberOfPixels"], e);
+                        UtilitiesBot.keyboards["numberOfPixels"], eventUser);
                     break;
                 // Выбор режима.
                 case "mode":
-                    LogFromCallback(user, UtilitiesBot.State.S_Mode, 
+                    LogFromCallback(user, UtilitiesBot.State.S_Mode,
                         UtilitiesBot.infoText["mode"] + user.Settings["mode"],
-                        UtilitiesBot.keyboards["mode"], e);
+                        UtilitiesBot.keyboards["mode"], eventUser);
                     break;
                 // Выбранный режим.
                 case "artist":
                 case "colorblind":
-                    user.Settings["mode"] = e.CallbackQuery.Data;
+                    user.Settings["mode"] = eventUser.CallbackQuery.Data;
 
                     if ((int)user.State == 6)
                     {
@@ -122,7 +125,7 @@ namespace CourseWorkForm
                         keyboard = UtilitiesBot.keyboards["info"];
                     }
 
-                    LogFromCallback(user, UtilitiesBot.State.S_Info, text, keyboard, e);
+                    LogFromCallback(user, UtilitiesBot.State.S_Info, text, keyboard, eventUser);
                     break;
                 case "back":
                     UtilitiesBot.State state;
@@ -145,7 +148,7 @@ namespace CourseWorkForm
                         state = UtilitiesBot.State.S_Info;
                     }
 
-                    LogFromCallback(user, state, text, keyboard, e);
+                    LogFromCallback(user, state, text, keyboard, eventUser);
                     break;
                 default:
                     break;
@@ -163,31 +166,40 @@ namespace CourseWorkForm
         /// <param name="state">На какой кнопке находится пользователь.</param>
         /// <param name="text">Какой текст сообщения выводится.</param>
         /// <param name="keyboard">Какая клавиатура передается.</param>
-        async void LogFromCallback(UserBot user, UtilitiesBot.State state, string text, InlineKeyboardMarkup keyboard, CallbackQueryEventArgs e)
+        async void LogFromCallback(UserBot user, UtilitiesBot.State state, string text,
+            InlineKeyboardMarkup keyboard, CallbackQueryEventArgs eventUser)
         {
-            messageLast = await botClient.EditMessageTextAsync(
-                    chatId: e.CallbackQuery.From.Id,
-                    messageId: e.CallbackQuery.Message.MessageId,
-                    parseMode: ParseMode.Markdown,
-                    text: text,
-                    replyMarkup: keyboard
-                );
+            try
+            {
+                messageLast = await botClient.EditMessageTextAsync(
+                        chatId: eventUser.CallbackQuery.From.Id,
+                        messageId: eventUser.CallbackQuery.Message.MessageId,
+                        parseMode: ParseMode.Markdown,
+                        text: text,
+                        replyMarkup: keyboard
+                    );
 
-            user.State = state;
-            // Выводим информацию в log о том, что меняется.
-            logBot.BeginInvoke((MethodInvoker)(
-                    () => logBot.Text += $"For {user.Name} the state has been updated: {user.State}\n"));
-            WorkWithBD.UpdateUserAsync(user);
+                user.State = state;
+                // Выводим информацию в log о том, что меняется.
+                logBot.BeginInvoke((MethodInvoker)(
+                        () => logBot.Text += $"For {user.Name} the state has been updated: {user.State}\n"));
+                WorkWithBD.UpdateUserAsync(user);
+            }
+            catch (Telegram.Bot.Exceptions.MessageIsNotModifiedException error)
+            {
+                logBot.BeginInvoke((MethodInvoker)(
+                        () => logBot.Text += error.Message + Environment.NewLine));
+            }
         }
 
         /// <summary>
         /// Получает от пользователя сообщения вроде изображений, набора текста и так далее, потом
         /// в зависимости от сообщения, применяет разные подходы.
         /// </summary>
-        /// <param name="e">Какое сообщение нужно обрабатывать.</param>
-        async void Bot_OnMessage(object sender, MessageEventArgs e)
+        /// <param name="eventUser">Какое сообщение нужно обрабатывать.</param>
+        async void Bot_OnMessage(object sender, MessageEventArgs eventUser)
         {
-            Telegram.Bot.Types.Message message = e.Message;
+            Telegram.Bot.Types.Message message = eventUser.Message;
             // Создаем пользователя на основе сообщения, т.е. мы получаем от базы данных информацию.
             UserBot user = await WorkWithBD.GetUserAsync(message.Chat.Id, message.From.FirstName);
 
@@ -215,9 +227,17 @@ namespace CourseWorkForm
         {
             if ((int)user.State == 1)
             {
-                SavePhoto(message);
+                GetPhoto(message, user);
             }
             else
+            {
+                BotErrorMessage(message);
+            }
+        }
+
+        async void BotErrorMessage(Telegram.Bot.Types.Message message)
+        {
+            try
             {
                 await botClient.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
                 // Этот раздел нужен для того, чтобы сказать, что команда неверна и будет
@@ -234,16 +254,42 @@ namespace CourseWorkForm
                             replyMarkup: messageLast.ReplyMarkup
                         );
             }
+            catch (NullReferenceException error)
+            {
+                logBot.BeginInvoke((MethodInvoker)(
+                        () => logBot.Text += error.Message + Environment.NewLine));
+            }
+            catch (Telegram.Bot.Exceptions.ApiRequestException error)
+            {
+                logBot.BeginInvoke((MethodInvoker)(
+                    () => logBot.Text += error.Message + Environment.NewLine));
+                await botClient.SendTextMessageAsync(
+                          chatId: message.Chat,
+                          text: "*Мне стало плохо... Даже железяки могут подводить. Напишите, " +
+                          "пожалуйста, /start, для того, чтобы я заработал.*",
+                          parseMode: ParseMode.Markdown
+                        );
+            }
         }
 
-        private async void SavePhoto(Telegram.Bot.Types.Message message, string path = "photo.png")
+        private async void GetPhoto(Telegram.Bot.Types.Message message, UserBot user)
         {
             try
             {
-                using (FileStream fs = System.IO.File.Create(path))
+                var file = await botClient.GetFileAsync(message.Photo[message.Photo.Length - 1].FileId);
+
+                Bitmap image = WorkWithImage.GetResult(new Bitmap(
+                    new WebClient().OpenRead(@"https://api.telegram.org/file/bot" + tokenBot + "/" 
+                    + file.FilePath)), int.Parse(user.Settings["amount"].ToString()));
+
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    var downloadFile = 
-                        await botClient.GetInfoAndDownloadFileAsync(message.Photo[message.Photo.Length - 1].FileId, fs);
+                    image.Save(memoryStream, ImageFormat.Png);
+                    memoryStream.Position = 0;
+                    await botClient.SendPhotoAsync(
+                                chatId: message.Chat, 
+                                photo: memoryStream,
+                                caption: "Ваш результат.");
                 }
             }
             catch (IOException)
@@ -285,45 +331,14 @@ namespace CourseWorkForm
                               replyMarkup: UtilitiesBot.keyboards["start"]
                             );
                     break;
-                case "Петушара":
-                    await botClient.SendPhotoAsync(
-                          chatId: message.Chat,
-                          photo: "https://d2hhj3gz5jljkm.cloudfront.net/assets2/159/662/390/528/normal/file.jpg"
-                        );
-                    break;
+                //case "Петушара":
+                //    await botClient.SendPhotoAsync(
+                //          chatId: message.Chat,
+                //          photo: "https://d2hhj3gz5jljkm.cloudfront.net/assets2/159/662/390/528/normal/file.jpg"
+                //        );
+                //    break;
                 default:
-                    try
-                    {
-                        await botClient.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
-                        // Этот раздел нужен для того, чтобы сказать, что команда неверна и будет
-                        // выведена соотвествующая информация.
-                        await botClient.SendTextMessageAsync(
-                                  chatId: message.Chat,
-                                  text: UtilitiesBot.infoText["error"]
-                                );
-
-                        messageLast = await botClient.SendTextMessageAsync(
-                                    chatId: message.Chat,
-                                    parseMode: ParseMode.Markdown,
-                                    text: messageLast.Text,
-                                    replyMarkup: messageLast.ReplyMarkup
-                                );
-                    }
-                    catch (NullReferenceException error)
-                    {
-                        logBot.BeginInvoke((MethodInvoker)(
-                                () => logBot.Text += error.Message + Environment.NewLine));
-                    }
-                    catch (Telegram.Bot.Exceptions.ApiRequestException error)
-                    {
-                        logBot.BeginInvoke((MethodInvoker)(
-                            () => logBot.Text += error.Message + Environment.NewLine));
-                        await botClient.SendTextMessageAsync(
-                                  chatId: message.Chat,
-                                  text: "*СЛИШКОМ МНОГО ЗАПРОСОВ, ДРУГ!*",
-                                  parseMode: ParseMode.Markdown
-                                );
-                    }
+                    BotErrorMessage(message);
                     break;
             }
         }

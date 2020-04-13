@@ -9,8 +9,9 @@ namespace CourseWork_Library
 {
     public class WorkWithImage
     {
-        public static Bitmap GetResult(Bitmap image, int amountColor)
+        public static Bitmap GetResult(Bitmap image, UserBot user)
         {
+            int amountColor = int.Parse(user.Settings["amount"].ToString());
             Dictionary<Color, ulong> arrayPixels = GetArrayPixels(image);
 
             int step = 0;
@@ -26,7 +27,7 @@ namespace CourseWork_Library
                 }
             }
 
-            return CreateBitmap(colors);
+            return CreateBitmap(colors, user.Settings["mode"].ToString());
         }
 
         static private Dictionary<Color, ulong> GetArrayPixels(Bitmap image)
@@ -51,7 +52,7 @@ namespace CourseWork_Library
             return arrayPixels.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
         }
 
-        static private Bitmap CreateBitmap(Color[] colors)
+        static private Bitmap CreateBitmap(Color[] colors, string mode)
         {
             Bitmap image = new Bitmap(508, 100 * colors.Length + 4 * (colors.Length + 1));
 
@@ -62,13 +63,16 @@ namespace CourseWork_Library
                 for (int i = 0; i < colors.Length; i++)
                 {
                     flagGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, 500, 100);
-                    flagGraphics.FillRectangle(Brushes.White, new Rectangle(164, 30 + y, 180, 40));
-                    StringFormat stringFormat = new StringFormat();
-                    stringFormat.Alignment = stringFormat.LineAlignment = StringAlignment.Center;
-                    flagGraphics.DrawString($"#{colors[i].Name.Substring(2).ToUpper()}",
-                        new Font("Arial", 25), Brushes.Black,
-                        new Rectangle(164, 30 + y, 180, 40), stringFormat);
 
+                    if (mode == "artist")
+                    {
+                        flagGraphics.FillRectangle(Brushes.White, new Rectangle(164, 30 + y, 180, 40));
+                        StringFormat stringFormat = new StringFormat();
+                        stringFormat.Alignment = stringFormat.LineAlignment = StringAlignment.Center;
+                        flagGraphics.DrawString($"#{colors[i].Name.Substring(2).ToUpper()}",
+                            new Font("Arial", 25), Brushes.Black,
+                            new Rectangle(164, 30 + y, 180, 40), stringFormat);
+                    }
                     y += 104;
                 }
             }

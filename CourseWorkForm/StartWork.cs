@@ -30,7 +30,7 @@ namespace CourseWorkForm
         private static readonly TelegramBotClient botClient = new TelegramBotClient(tokenBot);
         // Сохраняем номер ВЕДУЩЕГО сообщения бота. 
         Telegram.Bot.Types.Message messageLast;
-
+        // Костыль.
         string saveInfo = string.Empty;
 
         public StartWork()
@@ -182,13 +182,14 @@ namespace CourseWorkForm
                 user.State = state;
                 // Выводим информацию в log о том, что меняется.
                 logBot.BeginInvoke((MethodInvoker)(
-                        () => logBot.Text += $"For {user.Name} the state has been updated: {user.State}\n"));
+                        () => logBot.Text += $"{DateTime.Now} For {user.Name} the " +
+                        $"state has been updated: {user.State}\n"));
                 WorkWithBD.UpdateUserAsync(user);
             }
             catch (Telegram.Bot.Exceptions.MessageIsNotModifiedException error)
             {
                 logBot.BeginInvoke((MethodInvoker)(
-                        () => logBot.Text += error.Message + Environment.NewLine));
+                        () => logBot.Text += DateTime.Now + " " + error.Message + Environment.NewLine));
             }
         }
 
@@ -212,26 +213,27 @@ namespace CourseWorkForm
             {
                 // Выводит информацию о действиях пользователя:
                 logBot.BeginInvoke((MethodInvoker)(
-                    () => logBot.Text += $"{user.Name} sent a message at: {message.Date} to " +
-                    $"{user.ChatId} with such text:\n{message.Text}\n"));
+                    () => logBot.Text += $"{DateTime.Now} {user.Name} sent a message to " +
+                    $"with such text:\n{message.Text}\n"));
 
                 Bot_OnMessage_Text(user, message);
             }
-            else if (message.Type == MessageType.Photo)
+            else if (message.Type == MessageType.Photo || (message.Type == MessageType.Document &&
+                    message.Document.MimeType.Split('/')[0] == "image"))
             {
-                Bot_OnMessage_Photo(user, message);
-            }
-        }
+                // Выводит информацию о действиях пользователя:
+                logBot.BeginInvoke((MethodInvoker)(
+                    () => logBot.Text += $"{DateTime.Now} {user.Name} sent a photo/document\n"));
 
-        async void Bot_OnMessage_Photo(UserBot user, Telegram.Bot.Types.Message message)
-        {
-            if ((int)user.State == 1)
-            {
-                GetPhoto(message, user);
-            }
-            else
-            {
-                BotErrorMessage(message);
+
+                if ((int)user.State == 1)
+                {
+                    GetPhoto(message, user);
+                }
+                else
+                {
+                    BotErrorMessage(message);
+                }
             }
         }
 
@@ -257,16 +259,16 @@ namespace CourseWorkForm
             catch (NullReferenceException error)
             {
                 logBot.BeginInvoke((MethodInvoker)(
-                        () => logBot.Text += error.Message + Environment.NewLine));
+                        () => logBot.Text += DateTime.Now + " " + error.Message + Environment.NewLine));
             }
             catch (Telegram.Bot.Exceptions.ApiRequestException error)
             {
                 logBot.BeginInvoke((MethodInvoker)(
-                    () => logBot.Text += error.Message + Environment.NewLine));
+                    () => logBot.Text += DateTime.Now + " " + error.Message + Environment.NewLine));
                 await botClient.SendTextMessageAsync(
                           chatId: message.Chat,
                           text: "*Мне стало плохо... Даже железяки могут подводить. Напишите, " +
-                          "пожалуйста, /start, для того, чтобы я заработал.*",
+                          "пожалуйста, /start, для того, чтобы я заработал корректно на 100%.*",
                           parseMode: ParseMode.Markdown
                         );
             }
@@ -276,41 +278,65 @@ namespace CourseWorkForm
         {
             try
             {
-                var file = await botClient.GetFileAsync(message.Photo[message.Photo.Length - 1].FileId);
+                Telegram.Bot.Types.File file;
+
+                if (message.Type == MessageType.Document)
+                {
+                    file = await botClient.GetFileAsync(message.Document.FileId);
+                }
+                else
+                {
+                    file = await botClient.GetFileAsync(message.Photo[message.Photo.Length - 1].FileId);
+                }
 
                 Bitmap image = WorkWithImage.GetResult(new Bitmap(
-                    new WebClient().OpenRead(@"https://api.telegram.org/file/bot" + tokenBot + "/" 
-                    + file.FilePath)), int.Parse(user.Settings["amount"].ToString()));
+                    new WebClient().OpenRead(@"https://api.telegram.org/file/bot" + tokenBot + "/"
+                    + file.FilePath)), user);
 
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     image.Save(memoryStream, ImageFormat.Png);
                     memoryStream.Position = 0;
                     await botClient.SendPhotoAsync(
-                                chatId: message.Chat, 
+                                chatId: message.Chat,
                                 photo: memoryStream,
                                 caption: "Ваш результат.");
+
+                    if (messageLast != null)
+                    {
+                        await botClient.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+                    }
+
+                    messageLast = await botClient.SendTextMessageAsync(
+                                        chatId: message.Chat,
+                                        text: UtilitiesBot.infoText["upload"],
+                                        replyMarkup: UtilitiesBot.keyboards["back"]);
                 }
             }
             catch (IOException)
             {
-                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"Ошибка ввода-вывода."));
+                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"{DateTime.Now} Ошибка ввода-вывода."));
             }
             catch (System.Security.SecurityException)
             {
-                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"Ошибка безопасности."));
+                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"{DateTime.Now} Ошибка безопасности."));
             }
             catch (UnauthorizedAccessException)
             {
-                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"Ошибка доступа."));
+                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"{DateTime.Now} Ошибка доступа."));
             }
             catch (Exception)
             {
                 logBot.BeginInvoke((MethodInvoker)(
-                    () => logBot.Text += $"Произошел конец света, упс."));
+                    () => logBot.Text += $"{DateTime.Now} Произошел конец света, упс."));
             }
         }
 
+        /// <summary>
+        /// Реагирует на текстовые сообщения пользователя, обрабатывает все некорректные сообщения.
+        /// </summary>
+        /// <param name="user">С каким пользователем взаимодействуем.</param>
+        /// <param name="message">Сообщение, которое нужно обрабатывать.</param>
         async void Bot_OnMessage_Text(UserBot user, Telegram.Bot.Types.Message message)
         {
             switch (message.Text)
@@ -322,7 +348,8 @@ namespace CourseWorkForm
                     WorkWithBD.AddUserAsync(user);
                     // Выводим информацию в log о том, что меняется.
                     logBot.BeginInvoke((MethodInvoker)(
-                            () => logBot.Text += $"For {user.Name} the state has been updated: {user.State}\n"));
+                            () => logBot.Text += $"{DateTime.Now} For {user.Name} the state " +
+                            $"has been updated: {user.State}\n"));
                     // Бот информирует пользователя о текущем разделе.
                     messageLast = await botClient.SendTextMessageAsync(
                               chatId: message.Chat,
@@ -331,12 +358,6 @@ namespace CourseWorkForm
                               replyMarkup: UtilitiesBot.keyboards["start"]
                             );
                     break;
-                //case "Петушара":
-                //    await botClient.SendPhotoAsync(
-                //          chatId: message.Chat,
-                //          photo: "https://d2hhj3gz5jljkm.cloudfront.net/assets2/159/662/390/528/normal/file.jpg"
-                //        );
-                //    break;
                 default:
                     BotErrorMessage(message);
                     break;

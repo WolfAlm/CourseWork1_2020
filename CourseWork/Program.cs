@@ -10,10 +10,6 @@ using System.Drawing;
 
 namespace CourseWork
 {
-    class WorkWithImage
-    {
-
-    }
     class Program
     {
         // Токен бота.

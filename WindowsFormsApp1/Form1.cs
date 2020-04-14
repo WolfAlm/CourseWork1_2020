@@ -38,24 +38,24 @@ namespace WindowsFormsApp1
 
         public void CreateBitmapAtRuntime(Color[] colors)
         {
-            Pixels.Size = new Size(508, 100 * colors.Length + 4 * (colors.Length + 1));
-            Bitmap flag = new Bitmap(508, 100 * colors.Length + 4 * (colors.Length + 1));
+            Pixels.Size = new Size(204, 50 * colors.Length + 2 * (colors.Length + 1));
+            Bitmap flag = new Bitmap(204, 50 * colors.Length + 2 * (colors.Length + 1));
 
             using (Graphics flagGraphics = Graphics.FromImage(flag))
             {
                 flagGraphics.Clear(Color.White);
-                int y = 4;
+                int y = 2;
                 for (int i = 0; i < colors.Length; i++)
                 {
-                    flagGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, 500, 100);
-                    flagGraphics.FillRectangle(Brushes.White, new Rectangle(164, 30 + y, 180, 40));
+                    flagGraphics.FillRectangle(new SolidBrush(colors[i]), 2, y, 250, 50);
+                    flagGraphics.FillRectangle(Brushes.White, new Rectangle(82, 15 + y, 90, 20));
                     StringFormat stringFormat = new StringFormat();
                     stringFormat.Alignment = stringFormat.LineAlignment = StringAlignment.Center;
                     flagGraphics.DrawString($"#{colors[i].Name.Substring(2).ToUpper()}",
-                        new Font("Arial", 25), Brushes.Black,
-                        new Rectangle(164, 30 + y, 180, 40), stringFormat);
+                        new Font("Arial", 16), Brushes.Black,
+                        new Rectangle(82, 15 + y, 90, 20), stringFormat);
 
-                    y += 104;
+                    y += 52;
                 }
             }
 

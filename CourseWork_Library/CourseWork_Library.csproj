@@ -86,7 +86,6 @@
     <Compile Include="UtilitiesBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserBot.cs" />
-    <Compile Include="WorkBot.cs" />
     <Compile Include="WorkWithBD.cs" />
     <Compile Include="WorkWithImage.cs" />
   </ItemGroup>

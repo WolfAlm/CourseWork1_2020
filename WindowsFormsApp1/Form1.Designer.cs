@@ -40,23 +40,23 @@
             // 
             this.richTextBox1.Location = new System.Drawing.Point(12, 12);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(253, 156);
+            this.richTextBox1.Size = new System.Drawing.Size(273, 156);
             this.richTextBox1.TabIndex = 2;
             this.richTextBox1.Text = "";
             // 
             // Pixels
             // 
             this.Pixels.BackColor = System.Drawing.Color.Yellow;
-            this.Pixels.Location = new System.Drawing.Point(12, 174);
+            this.Pixels.Location = new System.Drawing.Point(12, 173);
             this.Pixels.Name = "Pixels";
-            this.Pixels.Size = new System.Drawing.Size(524, 524);
+            this.Pixels.Size = new System.Drawing.Size(263, 525);
             this.Pixels.TabIndex = 7;
             this.Pixels.TabStop = false;
             // 
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(462, 17);
+            this.pictureBox1.Location = new System.Drawing.Point(314, 12);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(601, 453);
             this.pictureBox1.TabIndex = 8;

@@ -16,10 +16,10 @@ namespace CourseWork_Library
     public class WorkWithBD
     {
         // Подключение к серверу для работы с базой данных. 
-        static private MongoClient client = new MongoClient("mongodb+srv://sharp:ASDFG12wert@clusterbot-kc2bm." +
+        static private MongoClient serverBD = new MongoClient("mongodb+srv://sharp:ASDFG12wert@clusterbot-kc2bm." +
             "mongodb.net/test?retryWrites=true&w=majority");
         // Получаем базу по "users". 
-        static private IMongoDatabase database = client.GetDatabase("users");
+        static private IMongoDatabase database = serverBD.GetDatabase("users");
 
         /// <summary>
         /// При первом взаимодействии с ботом, мы добавляем пользователя в базу. 

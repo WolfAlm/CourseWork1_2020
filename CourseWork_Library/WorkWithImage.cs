@@ -27,21 +27,29 @@ namespace CourseWork_Library
             return CreateBitmap(colors, user.Settings["mode"].ToString());
         }
 
+        /// <summary>
+        /// Получает весь список пикселей и их количество с изображения.
+        /// </summary>
+        /// <param name="image">Изображение, из которого нужно вытягивать массив пикселей.</param>
+        /// <returns>Возвращает результат работы.</returns>
         static private Dictionary<Color, ulong> GetArrayPixels(Bitmap image)
         {
             Dictionary<Color, ulong> arrayPixels = new Dictionary<Color, ulong>();
 
-            for (int i = 0; i < image.Width; i++)
+            using (AlternativeBitmap wr = new AlternativeBitmap(image))
             {
-                for (int j = 0; j < image.Height; j++)
+                for (int i = 0; i < wr.Width; i++)
                 {
-                    if (arrayPixels.ContainsKey(image.GetPixel(i, j)))
+                    for (int j = 0; j < wr.Height; j++)
                     {
-                        arrayPixels[image.GetPixel(i, j)]++;
-                    }
-                    else
-                    {
-                        arrayPixels.Add(image.GetPixel(i, j), 1);
+                        if (arrayPixels.ContainsKey(wr[i, j]))
+                        {
+                            arrayPixels[wr[i, j]]++;
+                        }
+                        else
+                        {
+                            arrayPixels.Add(wr[i, j], 1);
+                        }
                     }
                 }
             }
@@ -49,6 +57,12 @@ namespace CourseWork_Library
             return arrayPixels.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
         }
 
+        /// <summary>
+        /// Создает палитру из доминирующих цветов.
+        /// </summary>
+        /// <param name="colors">Из каких цветов создавать палитру.</param>
+        /// <param name="mode">Какой режим у пользователя.</param>
+        /// <returns>Возвращает палитру в виде изображения.</returns>
         static private Bitmap CreateBitmap(Color[] colors, string mode)
         {
             Bitmap image = new Bitmap(508, 100 * colors.Length + 4 * (colors.Length + 1));

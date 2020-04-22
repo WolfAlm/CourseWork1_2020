@@ -9,6 +9,9 @@ using CourseWork_Library;
 using System.IO;
 using System.Net;
 using System.Drawing.Imaging;
+using System.Collections.Generic;
+using Telegram.Bot.Types;
+using Message = Telegram.Bot.Types.Message;
 
 // Всплывающее уведомление
 //await botClient.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Вы нажали на такую вот кнопку {buttonText}");
@@ -22,26 +25,31 @@ namespace CourseWorkForm
         // Токен бота.
         private const string tokenBot = "955523636:AAF3THwqIPSRat5q7TZUBow_B8QEvm8zGW8";
         // Создаем бота с нужным токеном бота.
-        private static readonly TelegramBotClient botClient = new TelegramBotClient(tokenBot);
+        private static readonly TelegramBotClient bot = new TelegramBotClient(tokenBot);
         // Сохраняем номер ВЕДУЩЕГО сообщения бота. 
-        Telegram.Bot.Types.Message messageLast;
+        private Message messageLast;
         // Костыль.
         string saveInfo = string.Empty;
+
+        //List<Bitmap> arrayBitmaps = new List<Bitmap>();
+        //string idGroupMedia = string.Empty;
+        //int step = 0;
+        //Message[] mediasLast;
 
         public StartWork()
         {
             InitializeComponent();
 
             // Запускаем таймер текущей работы.
-            stopwatch.Tick += new EventHandler(tickTimer);
+            stopwatch.Tick += new EventHandler(TickTimer);
             stopwatch.Start();
 
             // Подписка на сообщения от пользователя.
-            botClient.OnMessage += Bot_OnMessage;
+            bot.OnMessage += Bot_OnMessage;
             // Подписка на inlin'ы от пользователя.
-            botClient.OnCallbackQuery += BotClient_OnCallbackQuery;
+            bot.OnCallbackQuery += BotClient_OnCallbackQuery;
             // Запускаем бота.
-            botClient.StartReceiving();
+            bot.StartReceiving();
         }
 
         /// <summary>
@@ -52,7 +60,7 @@ namespace CourseWorkForm
         private async void BotClient_OnCallbackQuery(object sender, CallbackQueryEventArgs eventUser)
         {
             // Создаем пользователя на основе сообщения, т.е. мы получаем от базы данных информацию.
-            UserBot user = await WorkWithBD.GetUserAsync(eventUser.CallbackQuery.From.Id, 
+            UserBot user = await WorkWithBD.GetUserAsync(eventUser.CallbackQuery.From.Id,
                 eventUser.CallbackQuery.From.FirstName);
 
             // Создаем глобальные переменные, для того, чтобы потом можно было в качестве них
@@ -160,12 +168,12 @@ namespace CourseWorkForm
         /// <param name="text">Какой текст сообщения выводится.</param>
         /// <param name="keyboard">Какая клавиатура передается.</param>
         /// <param name="eventUser">Какого пользователя будем обрабатывать.</param>
-        async void LogFromCallback(UserBot user, UtilitiesBot.State state, string text,
+        private async void LogFromCallback(UserBot user, UtilitiesBot.State state, string text,
             InlineKeyboardMarkup keyboard, CallbackQueryEventArgs eventUser)
         {
             try
             {
-                messageLast = await botClient.EditMessageTextAsync(
+                messageLast = await bot.EditMessageTextAsync(
                         chatId: eventUser.CallbackQuery.From.Id,
                         messageId: eventUser.CallbackQuery.Message.MessageId,
                         parseMode: ParseMode.Markdown,
@@ -195,9 +203,10 @@ namespace CourseWorkForm
         /// в зависимости от сообщения, применяет разные подходы.
         /// </summary>
         /// <param name="eventUser">Какое сообщение нужно обрабатывать.</param>
-        async void Bot_OnMessage(object sender, MessageEventArgs eventUser)
+        private async void Bot_OnMessage(object sender, MessageEventArgs eventUser)
         {
-            Telegram.Bot.Types.Message message = eventUser.Message;
+            Message message = eventUser.Message;
+
             // Создаем пользователя на основе события от сообщения, т.е. мы получаем от базы 
             // данных информацию.
             UserBot user = await WorkWithBD.GetUserAsync(message.Chat.Id, message.From.FirstName);
@@ -222,7 +231,7 @@ namespace CourseWorkForm
                 // Выводит информацию о действиях пользователя:
                 logBot.BeginInvoke((MethodInvoker)(
                     () => logBot.Text += $"{DateTime.Now} {user.Name} sent a photo/document\n"));
-                
+
                 // Проверяем на то, в нужном ли состоянии залил пользователь фотку.
                 if ((int)user.State == 1)
                 {
@@ -236,40 +245,38 @@ namespace CourseWorkForm
         }
 
         /// <summary>
-        /// Здесь будут выводиться сообщения о ошибках работы.
+        /// Выводятся сообщения о ошибках работы.
         /// </summary>
         /// <param name="message">Какое событие мы обрабатываем.</param>
-        async void BotErrorMessage(Telegram.Bot.Types.Message message)
+        private async void BotErrorMessage(Message message)
         {
             try
             {
                 // Мы удаляем сообщение, где было связанное с меню во избежание неудобства и 
                 // некорректности.
-                await botClient.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+                if (messageLast != null)
+                {
+                    await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+                }
                 // Этот раздел нужен для того, чтобы сказать, что команда неверна и будет
                 // выведена соотвествующая информация.
-                await botClient.SendTextMessageAsync(
+                await bot.SendTextMessageAsync(
                           chatId: message.Chat,
                           text: UtilitiesBot.infoText["error"]
                         );
 
-                messageLast = await botClient.SendTextMessageAsync(
+                messageLast = await bot.SendTextMessageAsync(
                             chatId: message.Chat,
                             parseMode: ParseMode.Markdown,
                             text: messageLast.Text,
                             replyMarkup: messageLast.ReplyMarkup
                         );
             }
-            catch (NullReferenceException error)
-            {
-                logBot.BeginInvoke((MethodInvoker)(
-                        () => logBot.Text += DateTime.Now + " " + error.Message + Environment.NewLine));
-            }
             catch (Telegram.Bot.Exceptions.ApiRequestException error)
             {
                 logBot.BeginInvoke((MethodInvoker)(
                     () => logBot.Text += DateTime.Now + " " + error.Message + Environment.NewLine));
-                await botClient.SendTextMessageAsync(
+                await bot.SendTextMessageAsync(
                           chatId: message.Chat,
                           text: "*Мне стало плохо... Даже железяки могут подводить. Напишите, " +
                           "пожалуйста, /start, для того, чтобы я заработал корректно на 100%.*",
@@ -285,7 +292,7 @@ namespace CourseWorkForm
         /// </summary>
         /// <param name="message">Какое событие мы обрабатываем.</param>
         /// <param name="user">У какого пользователя мы обрабатываем эти события.</param>
-        private async void GetPhoto(Telegram.Bot.Types.Message message, UserBot user)
+        private async void GetPhoto(Message message, UserBot user)
         {
             try
             {
@@ -295,40 +302,96 @@ namespace CourseWorkForm
                 // обработки таких изображений.
                 if (message.Type == MessageType.Document)
                 {
-                    file = await botClient.GetFileAsync(message.Document.FileId);
+                    file = await bot.GetFileAsync(message.Document.FileId);
                 }
                 else
                 {
-                    file = await botClient.GetFileAsync(message.Photo[message.Photo.Length - 1].FileId);
+                    file = await bot.GetFileAsync(message.Photo[message.Photo.Length - 1].FileId);
                 }
 
                 // Мы "скачиваем" файл с сервера телеграмма, сохраняем в Bitmap, после чего, мы 
-                // обрабатываем эту картинку.
+                // обрабатываем эту картинку и возвращаем результат в виде Bitmap.
                 Bitmap image = WorkWithImage.GetResult(new Bitmap(
                     new WebClient().OpenRead(@"https://api.telegram.org/file/bot" + tokenBot + "/"
                     + file.FilePath)), user);
 
+                //if (idGroupMedia != message.MediaGroupId)
+                //{
+                //    arrayBitmaps.Clear();
+                //    idGroupMedia = message.MediaGroupId;
+                //}
+
+                //if (message.MediaGroupId == null)
+                //{
                 // Сохраним картинку в поток, для того, чтобы бот смог получить изображение из
                 // потока.
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     image.Save(memoryStream, ImageFormat.Png);
                     memoryStream.Position = 0;
-                    await botClient.SendPhotoAsync(
+                    await bot.SendPhotoAsync(
                                 chatId: message.Chat,
                                 photo: memoryStream,
                                 caption: "Ваш результат.");
 
                     if (messageLast != null)
                     {
-                        await botClient.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+                        await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
                     }
 
-                    messageLast = await botClient.SendTextMessageAsync(
+                    messageLast = await bot.SendTextMessageAsync(
                                         chatId: message.Chat,
                                         text: UtilitiesBot.infoText["upload"],
                                         replyMarkup: UtilitiesBot.keyboards["back"]);
                 }
+                //}
+                //else
+                //{
+                //arrayBitmaps.Add(image);
+
+                //if (arrayBitmaps.Count != 1)
+                //{
+                //    // Создаем поток.
+                //    MemoryStream[] memoryStream = new MemoryStream[arrayBitmaps.Count];
+                //    // Куда будем сохранять изображения.
+                //    IAlbumInputMedia[] inputMediasArray = new IAlbumInputMedia[arrayBitmaps.Count];
+                //    // Добавляем изображение при каждой итерации.
+                //    for (int i = 0; i < inputMediasArray.Length; i++)
+                //    {
+                //        memoryStream[i] = new MemoryStream();
+                //        arrayBitmaps[i].Save(memoryStream[i], ImageFormat.Png);
+                //        memoryStream[i].Position = 0;
+                //        inputMediasArray[i] = new InputMediaPhoto(new InputMedia(memoryStream[i],
+                //            $"photo{step}.png"));
+                //        step++;
+                //    }
+
+                //    //if (mediasLast != null)
+                //    //{
+                //    //    await bot.DeleteMessageAsync(message.Chat.Id, mediasLast[0].MessageId);
+                //    //}
+
+                //    mediasLast = await bot.SendMediaGroupAsync(
+                //        inputMedia: inputMediasArray,
+                //        chatId: message.Chat
+                //        );
+
+                //    for (int i = 0; i < memoryStream.Length; i++)
+                //    {
+                //        memoryStream[i].Close();
+                //    }
+
+                //    if (messageLast != null)
+                //    {
+                //        await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+                //    }
+
+                //    messageLast = await bot.SendTextMessageAsync(
+                //                        chatId: message.Chat,
+                //                        text: UtilitiesBot.infoText["upload"],
+                //                        replyMarkup: UtilitiesBot.keyboards["back"]);
+                //}
+                //}
             }
             catch (IOException)
             {
@@ -354,7 +417,7 @@ namespace CourseWorkForm
         /// </summary>
         /// <param name="user">С каким пользователем взаимодействуем.</param>
         /// <param name="message">Сообщение, которое нужно обрабатывать.</param>
-        async void Bot_OnMessage_Text(UserBot user, Telegram.Bot.Types.Message message)
+        private async void Bot_OnMessage_Text(UserBot user, Message message)
         {
             switch (message.Text)
             {
@@ -368,7 +431,7 @@ namespace CourseWorkForm
                             () => logBot.Text += $"{DateTime.Now} For {user.Name} the state " +
                             $"has been updated: {user.State}\n"));
                     // Бот информирует пользователя о текущем разделе.
-                    messageLast = await botClient.SendTextMessageAsync(
+                    messageLast = await bot.SendTextMessageAsync(
                               chatId: message.Chat,
                               parseMode: ParseMode.Markdown,
                               text: UtilitiesBot.infoText["start"],
@@ -384,7 +447,7 @@ namespace CourseWorkForm
         /// <summary>
         /// Выводит информацию в качестве секундомера о текущей работе.
         /// </summary>
-        private void tickTimer(object sender, EventArgs e)
+        private void TickTimer(object sender, EventArgs e)
         {
             // Форматируем время под нужный нам формат и обновляем информацию.
             labelStopwatch.Text = "Время работы: " + new DateTime().
@@ -394,9 +457,9 @@ namespace CourseWorkForm
         /// <summary>
         /// При закрытии формы, бот прекращает работу, форма окончательно закрывается.
         /// </summary>
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void BotForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            botClient.StopReceiving();
+            bot.StopReceiving();
             Application.Exit();
         }
     }

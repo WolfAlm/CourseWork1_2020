@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OftenColorBotLibrary.KMeans;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,28 +15,51 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
+        static string path = @"C:\Users\user\Desktop\file.jpg";
+
         public Form1()
         {
             InitializeComponent();
-            //Dictionary<Color, ulong> arrayPixels = WorkWithPhoto(new Bitmap(@"C:\Users\user\Desktop\file (3)DSC01279.jpg"));
-            string result = string.Empty;
-            Bitmap image = new Bitmap(@"C:\Users\user\Desktop\Google_Videos_logo.png");
-            Dictionary<Color, ulong> arrayPixels = WorkWithPhotoFast(image);
-            int step = 0;
-            Color[] colors = new Color[10];
-            foreach (var elem in arrayPixels)
-            {
-                result += elem.Key + " - " + elem.Key.Name.Substring(2) + " - " + elem.Value + "\n";
-                colors[step] = elem.Key;
-                step++;
-                if (step == 10)
-                {
-                    break;
-                }
-            }
+            pictureBox1.Image = new Bitmap(path);
+            //pictureBox1.Image = result;
+        }
+        /// <summary>
+        ///   Determines which radio button is selected 
+        ///   and calls the appropriate algorithm.
+        /// </summary>
+        /// 
+        private void btnRun_Click(object sender, EventArgs e)
+        {
+            if (radioClusters.Checked)
+                runKMeans();
+        }
 
-            CreateBitmapAtRuntime(colors);
-            richTextBox1.Text = result;
+        /// <summary>
+        ///   Runs the K-Means algorithm.
+        /// </summary>
+        /// 
+        private void runKMeans()
+        {
+            // Retrieve the number of clusters
+            int k = (int)numClusters.Value;
+
+            // Load original image
+            Bitmap image = new Bitmap(path);
+
+
+            double[][] pixels = GetArrayPixels(image);
+
+            // Create a K-Means algorithm using given k and a
+            //  square Euclidean distance as distance metric.
+            WorkKMeans kmeans = new WorkKMeans(k, pixels, 0.05);
+
+
+            string result = string.Empty;
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            pictureBox1.Image = new Bitmap(path);
         }
 
         public void CreateBitmapAtRuntime(Color[] colors)
@@ -89,6 +113,53 @@ namespace WindowsFormsApp1
             return arrayPixels.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
         }
 
+        private void GetArrayPixels(double[][] pixels)
+        {
+            Dictionary<Color, ulong> arrayPixels = new Dictionary<Color, ulong>();
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                Color color = Color.FromArgb((int)pixels[i][0], (int)pixels[i][1],
+                        (int)pixels[i][2]);
+
+                if (arrayPixels.ContainsKey(color))
+                {
+                    arrayPixels[color]++;
+                }
+                else
+                {
+                    arrayPixels.Add(color, 1);
+                }
+            }
+            //arrayPixels.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value)
+
+            string result = string.Empty;
+            foreach (var elem in arrayPixels)
+            {
+                result += elem.Key + " - " + elem.Key.Name.Substring(2) + " - " + elem.Value + "\n";
+            }
+            richTextBox1.Text = result;
+        }
+        static private double[][] GetArrayPixels(Bitmap image)
+        {
+            double[][] arrayPixels = new double[image.Width * image.Height][];
+
+            using (AlternativeBitmap wr = new AlternativeBitmap(image))
+            {
+                int step = 0;
+                for (int i = 0; i < wr.Width; i++)
+                {
+                    for (int j = 0; j < wr.Height; j++)
+                    {
+                        Color color = wr[i, j];
+                        arrayPixels[step] = new double[] { color.R, color.G, color.B };
+                        step++;
+                    }
+                }
+            }
+
+            return arrayPixels;
+        }
         /// <summary>
         /// Этот класс был создан для замены прямой работы с Bitmap.GetPixels(), так как была
         /// довольно долгая обработка огромных изображений, а этот класс уменьшал время обработки

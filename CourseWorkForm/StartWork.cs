@@ -5,7 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using CourseWork_Library;
+using OftenColorBotLibrary;
 using System.IO;
 using System.Net;
 using System.Drawing.Imaging;

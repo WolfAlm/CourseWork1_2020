@@ -8,18 +8,82 @@ using System.Threading;
 using Telegram.Bot.Args;
 using System.Drawing;
 using System.Collections;
-using CourseWork_Library;
 using Telegram.Bot.Types.Enums;
 using System.IO;
 using System.Drawing.Imaging;
 using System.Net;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using OftenColorBotLibrary;
+using OftenColorBotLibrary.KMeans;
+
 
 namespace CourseWork
 {
     class Program
     {
+        static void Main()
+        {
+            double[][] observations =
+            {
+                new double[] { -5, -2, -1 },
+                new double[] { -5, -5, -6 },
+                new double[] {  2,  1,  1 },
+                new double[] {  1,  1,  2 },
+                new double[] {  1,  2,  2 },
+                new double[] {  3,  1,  2 },
+                new double[] { 11,  5,  4 },
+                new double[] { 15,  5,  6 },
+                new double[] { 10,  5,  6 },
+            };
+
+            WorkKMeans kMeans = new WorkKMeans(3, observations);
+            //cluster.KMeansAlgorithm(observations);
+            //int[] labels = .PickClusterForPoints(observations);
+            string result = string.Empty;
+            //for (int j = 0; j < labels.Length; j++)
+            //{
+            //    for (int i = 0; i < labels.Length; i++)
+            //    {
+            //        if (j == labels[i])
+            //        {
+            //            foreach (int elem in observations[i])
+            //            {
+            //                result += elem + " ";
+            //            }
+            //            result += Environment.NewLine;
+            //        }
+            //    }
+            //}
+            Console.WriteLine(result);
+            Console.ReadLine();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // Определяем текущее время для запуска секундомера.
         DateTime date = DateTime.Now;
         // Токен бота.
@@ -49,6 +113,7 @@ namespace CourseWork
         //    Console.ReadLine();
         //    bot.StopReceiving();
         //}
+
 
 
 

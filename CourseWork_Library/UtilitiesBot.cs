@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace CourseWork_Library
+namespace OftenColorBotLibrary
 {
     public class UtilitiesBot
     {

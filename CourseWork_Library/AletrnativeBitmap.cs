@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace CourseWork_Library
+namespace OftenColorBotLibrary
 {
     /// <summary>
     /// Этот класс был создан для замены прямой работы с Bitmap.GetPixels(), так как была
@@ -34,9 +34,11 @@ namespace CourseWork_Library
         /// <param name="image">Изображение, откуда нужно вытягивать данные.</param>
         public AlternativeBitmap(Bitmap image)
         {
+            // Получаем нужные параметры изображения для работы с ними.
             Width = image.Width;
             Height = image.Height;
             this.image = image;
+            // Блокируем память 
             imageData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             stride = imageData.Stride;

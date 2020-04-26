@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
+using OftenColorBotLibrary.KMeans;
 
-namespace CourseWork_Library
+namespace OftenColorBotLibrary
 {
     public class WorkWithImage
     {
         public static Bitmap GetResult(Bitmap image, UserBot user)
         {
             int amountColor = int.Parse(user.Settings["amount"].ToString());
-            Dictionary<Color, ulong> arrayPixels = GetArrayPixels(image);
+            WorkKMeans kMeans = new WorkKMeans(10, GetArrayPixelsFromPhoto(image), 0.05);
+            Dictionary<Color, int> arrayPixels = kMeans.QuanitityPixels();
 
             int step = 0;
             Color[] colors = new Color[amountColor];
@@ -28,33 +29,30 @@ namespace CourseWork_Library
         }
 
         /// <summary>
-        /// Получает весь список пикселей и их количество с изображения.
+        /// Получает весь список пикселей и их количество с изображения, записывая их данные в виде
+        /// RGB.
         /// </summary>
         /// <param name="image">Изображение, из которого нужно вытягивать массив пикселей.</param>
-        /// <returns>Возвращает результат работы.</returns>
-        static private Dictionary<Color, ulong> GetArrayPixels(Bitmap image)
+        /// <returns>Получаем массив пикселей с их данными в виде RGB.</returns>
+        static private double[][] GetArrayPixelsFromPhoto(Bitmap image)
         {
-            Dictionary<Color, ulong> arrayPixels = new Dictionary<Color, ulong>();
+            double[][] arrayPixels = new double[image.Width * image.Height][];
 
             using (AlternativeBitmap wr = new AlternativeBitmap(image))
             {
+                int step = 0;
                 for (int i = 0; i < wr.Width; i++)
                 {
                     for (int j = 0; j < wr.Height; j++)
                     {
-                        if (arrayPixels.ContainsKey(wr[i, j]))
-                        {
-                            arrayPixels[wr[i, j]]++;
-                        }
-                        else
-                        {
-                            arrayPixels.Add(wr[i, j], 1);
-                        }
+                        Color color = wr[i, j];
+                        arrayPixels[step] = new double[] { color.R, color.G, color.B };
+                        step++;
                     }
                 }
             }
 
-            return arrayPixels.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+            return arrayPixels;
         }
 
         /// <summary>

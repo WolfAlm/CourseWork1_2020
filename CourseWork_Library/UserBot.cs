@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using MongoDB.Bson;
 
-namespace CourseWork_Library
+namespace OftenColorBotLibrary
 {
     public class UserBot
     {

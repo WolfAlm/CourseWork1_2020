@@ -12,6 +12,8 @@ namespace OftenColorBotLibrary
             "mongodb.net/test?retryWrites=true&w=majority");
         // Получаем базу по "users". 
         static private IMongoDatabase database = serverBD.GetDatabase("users");
+        // Получаем все документы из этой базы в формате BsonDocument.
+        static IMongoCollection<BsonDocument> collectionBson = database.GetCollection<BsonDocument>("user");
 
         /// <summary>
         /// При первом взаимодействии с ботом, мы добавляем пользователя в базу. 
@@ -20,17 +22,15 @@ namespace OftenColorBotLibrary
         /// <param name="state">Текущее положение пользователя.</param>
         static public async void AddUserAsync(UserBot user)
         {
-            // Получаем все документы из этой базы в формате BsonDocument.
-            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("user");
             // Устанавливаем фильтр для поиска и проверяем, есть ли такой документ в базе.
-            if (await collection.Find(new BsonDocument("ChatId", user.ChatId)).AnyAsync())
+            if (await collectionBson.Find(new BsonDocument("ChatId", user.ChatId)).AnyAsync())
             {
-                await collection.UpdateOneAsync(new BsonDocument("ChatId", user.ChatId),
+                await collectionBson.UpdateOneAsync(new BsonDocument("ChatId", user.ChatId),
                       new BsonDocument("$set", new BsonDocument("State", user.State)));
             }
             else
             {
-                await collection.InsertOneAsync(user.ToBsonDocument());
+                await collectionBson.InsertOneAsync(user.ToBsonDocument());
             }
         }
 
@@ -40,7 +40,7 @@ namespace OftenColorBotLibrary
         /// </summary>
         /// <param name="id">Идентификатор пользователя.</param>
         /// <returns>Возвращает созданного пользователя.</returns>
-        static public async Task<UserBot> GetUserAsync(long id, string name = null)
+        static public async Task<UserBot> GetUserAsync(long id, string name = "NoName")
         {
             // Получаем все документы из этой базы в формате UserBot.
             IMongoCollection<UserBot> collection = database.GetCollection<UserBot>("user");
@@ -49,6 +49,8 @@ namespace OftenColorBotLibrary
             // добавляем в базу.
             if (!await collection.Find(new BsonDocument("ChatId", id)).AnyAsync())
             {
+                UserBot user = new UserBot() { Name = name, ChatId = id };
+                await collectionBson.InsertOneAsync(user.ToBsonDocument());
                 AddUserAsync(new UserBot() { Name = name, ChatId = id });
             }
 
@@ -64,13 +66,11 @@ namespace OftenColorBotLibrary
         /// <param name="user">Чьи изменения нужно будет вносить.</param>
         static public async void UpdateUserAsync(UserBot user)
         {
-            // Получаем все документы из этой базы в формате BsonDocument.
-            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("user");
             // Обновляем данные относительно этого пользователя.
-            await collection.UpdateOneAsync(new BsonDocument("ChatId", user.ChatId),
+            await collectionBson.UpdateOneAsync(new BsonDocument("ChatId", user.ChatId),
                 new BsonDocument("$set", new BsonDocument("State", user.State)));
 
-            await collection.UpdateOneAsync(new BsonDocument("ChatId", user.ChatId),
+            await collectionBson.UpdateOneAsync(new BsonDocument("ChatId", user.ChatId),
                 new BsonDocument("$set", new BsonDocument("Settings", new BsonDocument 
                 { 
                     {"mode", user.Settings["mode"].ToString() },

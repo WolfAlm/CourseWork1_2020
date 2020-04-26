@@ -9,12 +9,7 @@ using OftenColorBotLibrary;
 using System.IO;
 using System.Net;
 using System.Drawing.Imaging;
-using System.Collections.Generic;
-using Telegram.Bot.Types;
 using Message = Telegram.Bot.Types.Message;
-
-// Всплывающее уведомление
-//await botClient.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Вы нажали на такую вот кнопку {buttonText}");
 
 namespace CourseWorkForm
 {
@@ -183,9 +178,7 @@ namespace CourseWorkForm
 
                 user.State = state;
                 // Выводим информацию в log о том, что изменилось состояние пользователя..
-                logBot.BeginInvoke((MethodInvoker)(
-                        () => logBot.Text += $"{DateTime.Now} For {user.Name} the " +
-                        $"state has been updated: {user.State}\n"));
+                InfoInLog($"{DateTime.Now} For {user.Name} the state has been updated: {user.State}\n");
                 // Вносим изменения в базу данных.
                 WorkWithBD.UpdateUserAsync(user);
             }
@@ -193,9 +186,17 @@ namespace CourseWorkForm
             // даем боту падать.
             catch (Telegram.Bot.Exceptions.MessageIsNotModifiedException error)
             {
-                logBot.BeginInvoke((MethodInvoker)(
-                        () => logBot.Text += DateTime.Now + " " + error.Message + Environment.NewLine));
+                InfoInLog(DateTime.Now + " " + error.Message + Environment.NewLine);
             }
+        }
+
+        /// <summary>
+        /// Выводит информацию о событиях и изменениях в лог винформы.
+        /// </summary>
+        /// <param name="info">Информация, которую нужно выводить.</param>
+        private void InfoInLog(string info)
+        {
+            logBot.BeginInvoke((MethodInvoker)(() => logBot.AppendText(info)));
         }
 
         /// <summary>
@@ -219,19 +220,15 @@ namespace CourseWorkForm
             else if (message.Type == MessageType.Text)
             {
                 // Выводит информацию о действиях пользователя:
-                logBot.BeginInvoke((MethodInvoker)(
-                    () => logBot.Text += $"{DateTime.Now} {user.Name} sent a message to " +
-                    $"with such text:\n{message.Text}\n"));
-
+                InfoInLog($"{DateTime.Now} {user.Name} sent a message to " +
+                    $"with such text:\n{message.Text}\n");
                 Bot_OnMessage_Text(user, message);
             }
             else if (message.Type == MessageType.Photo || (message.Type == MessageType.Document &&
                     message.Document.MimeType.Split('/')[0] == "image"))
             {
                 // Выводит информацию о действиях пользователя:
-                logBot.BeginInvoke((MethodInvoker)(
-                    () => logBot.Text += $"{DateTime.Now} {user.Name} sent a photo/document\n"));
-
+                InfoInLog($"{DateTime.Now} {user.Name} sent a photo/document\n");
                 // Проверяем на то, в нужном ли состоянии залил пользователь фотку.
                 if ((int)user.State == 1)
                 {
@@ -252,12 +249,6 @@ namespace CourseWorkForm
         {
             try
             {
-                // Мы удаляем сообщение, где было связанное с меню во избежание неудобства и 
-                // некорректности.
-                if (messageLast != null)
-                {
-                    await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
-                }
                 // Этот раздел нужен для того, чтобы сказать, что команда неверна и будет
                 // выведена соотвествующая информация.
                 await bot.SendTextMessageAsync(
@@ -265,17 +256,33 @@ namespace CourseWorkForm
                           text: UtilitiesBot.infoText["error"]
                         );
 
-                messageLast = await bot.SendTextMessageAsync(
-                            chatId: message.Chat,
-                            parseMode: ParseMode.Markdown,
-                            text: messageLast.Text,
-                            replyMarkup: messageLast.ReplyMarkup
-                        );
+                // Мы удаляем сообщение, где было связанное с меню во избежание неудобства и 
+                // некорректности.
+                if (messageLast != null)
+                {
+                    await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+
+                    messageLast = await bot.SendTextMessageAsync(
+                                        chatId: message.Chat,
+                                        parseMode: ParseMode.Markdown,
+                                        text: messageLast.Text,
+                                        replyMarkup: messageLast.ReplyMarkup
+                                    );
+                }
+                else
+                {
+                    await bot.SendTextMessageAsync(
+                                chatId: message.Chat,
+                                parseMode: ParseMode.Markdown,
+                                text: "*Мне стало плохо... Даже железяки могут подводить. Напишите, " +
+                                "пожалуйста, /start, для того, чтобы я заработал корректно на 100%.*"
+                            );
+                }
             }
             catch (Telegram.Bot.Exceptions.ApiRequestException error)
             {
-                logBot.BeginInvoke((MethodInvoker)(
-                    () => logBot.Text += DateTime.Now + " " + error.Message + Environment.NewLine));
+                InfoInLog(DateTime.Now + " " + error.Message + Environment.NewLine);
+
                 await bot.SendTextMessageAsync(
                           chatId: message.Chat,
                           text: "*Мне стало плохо... Даже железяки могут подводить. Напишите, " +
@@ -395,20 +402,12 @@ namespace CourseWorkForm
             }
             catch (IOException)
             {
-                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"{DateTime.Now} Ошибка ввода-вывода."));
+                InfoInLog($"{DateTime.Now} Ошибка ввода-вывода.");
             }
-            catch (System.Security.SecurityException)
+            catch (Exception error)
             {
-                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"{DateTime.Now} Ошибка безопасности."));
-            }
-            catch (UnauthorizedAccessException)
-            {
-                logBot.BeginInvoke((MethodInvoker)(() => logBot.Text += $"{DateTime.Now} Ошибка доступа."));
-            }
-            catch (Exception)
-            {
-                logBot.BeginInvoke((MethodInvoker)(
-                    () => logBot.Text += $"{DateTime.Now} Произошел конец света, упс."));
+                InfoInLog($"{DateTime.Now} Произошел конец света, упс." +
+                    $"\n{error.Message}");
             }
         }
 
@@ -427,9 +426,8 @@ namespace CourseWorkForm
                     // Проверяем на то, что такой пользователь есть ли в базе, при отсутствии -- добавляем.
                     WorkWithBD.AddUserAsync(user);
                     // Выводим информацию в log о том, что меняется.
-                    logBot.BeginInvoke((MethodInvoker)(
-                            () => logBot.Text += $"{DateTime.Now} For {user.Name} the state " +
-                            $"has been updated: {user.State}\n"));
+                    InfoInLog($"{DateTime.Now} For {user.Name} the state " +
+                            $"has been updated: {user.State}\n");
                     // Бот информирует пользователя о текущем разделе.
                     messageLast = await bot.SendTextMessageAsync(
                               chatId: message.Chat,

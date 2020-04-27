@@ -51,7 +51,7 @@ namespace OftenColorBotLibrary
             {
                 UserBot user = new UserBot() { Name = name, ChatId = id };
                 await collectionBson.InsertOneAsync(user.ToBsonDocument());
-                AddUserAsync(new UserBot() { Name = name, ChatId = id });
+                AddUserAsync(new UserBot() { Name = name, ChatId = id});
             }
 
             // Мы находим конкретного человека по заданному фильтру в качестве id и сохраняем его
@@ -74,7 +74,8 @@ namespace OftenColorBotLibrary
                 new BsonDocument("$set", new BsonDocument("Settings", new BsonDocument 
                 { 
                     {"mode", user.Settings["mode"].ToString() },
-                    {"amount", user.Settings["amount"].ToString() }
+                    {"amount", user.Settings["amount"].ToString() },
+                    {"modePalette", user.Settings["modePalette"].ToString() }
                 })));
         }
     }

@@ -25,7 +25,16 @@ namespace OftenColorBotLibrary
                 }
             }
 
-            return CreateBitmap(colors, user.Settings["mode"].ToString());
+            if (user.Settings["modePalette"].ToString() == "без изображения")
+            {
+                return CreatePalette(colors, 
+                    new Bitmap(508, 100 * colors.Length + 4 * (colors.Length + 1)), 
+                    user.Settings["mode"].ToString());
+            }
+            else
+            {
+                return CreatePalettePhoto(colors, image, user.Settings["modePalette"].ToString());
+            }
         }
 
         /// <summary>
@@ -59,21 +68,22 @@ namespace OftenColorBotLibrary
         /// Создает палитру из доминирующих цветов.
         /// </summary>
         /// <param name="colors">Из каких цветов создавать палитру.</param>
+        /// <param name="image">Изображение, где будет записана палитра.</param>
         /// <param name="mode">Какой режим у пользователя.</param>
         /// <returns>Возвращает палитру в виде изображения.</returns>
-        static private Bitmap CreateBitmap(Color[] colors, string mode)
+        static private Bitmap CreatePalette(Color[] colors, Bitmap image, string mode, 
+            int xSize = 500, int ySize = 100)
         {
-            Bitmap image = new Bitmap(508, 100 * colors.Length + 4 * (colors.Length + 1));
-
             using (Graphics flagGraphics = Graphics.FromImage(image))
             {
                 flagGraphics.Clear(Color.White);
                 int y = 4;
                 for (int i = 0; i < colors.Length; i++)
                 {
-                    flagGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, 500, 100);
+                    // Создаем прямоугольники с определенным цветом.
+                    flagGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, xSize, ySize);
 
-                    if (mode == "artist")
+                    if (mode == "профи")
                     {
                         flagGraphics.FillRectangle(Brushes.White, new Rectangle(164, 30 + y, 180, 40));
                         StringFormat stringFormat = new StringFormat();
@@ -82,11 +92,45 @@ namespace OftenColorBotLibrary
                             new Font("Arial", 25), Brushes.Black,
                             new Rectangle(164, 30 + y, 180, 40), stringFormat);
                     }
-                    y += 104;
+                    y += ySize + 4;
                 }
             }
 
             return image;
+        }
+
+        /// <summary>
+        /// Создает палитру из доминирующих цветов и пришивает ее к фотографии.
+        /// </summary>
+        /// <param name="colors">Из каких цветов создавать палитру.</param>
+        /// <param name="originalImage">Изображение, с чем будем склеивать палитру.</param>
+        /// <param name="mode">Какой режим у пользователя.</param>
+        /// <returns>Возвращает исходное изображение с палитрой.</returns>
+        static private Bitmap CreatePalettePhoto(Color[] colors, Bitmap originalImage, string mode)
+        {
+            Bitmap imageResult = new Bitmap(1, 1);
+            int sizeForColor = 0;
+
+            switch (mode)
+            {
+                case "справа":
+                    imageResult = new Bitmap(originalImage.Width + 200, originalImage.Height);
+                    sizeForColor = (originalImage.Height - 4 * (colors.Length + 1)) / colors.Length;
+                    break;
+                case "снизу":
+                    break;
+            }
+
+            Bitmap imagePalette = CreatePalette(colors, new Bitmap(200, originalImage.Height), 
+                mode, 192, sizeForColor);
+
+            using (Graphics final = Graphics.FromImage(imageResult))
+            {
+                final.DrawImage(originalImage, 0, 0);
+                final.DrawImage(imagePalette, originalImage.Width, 0);
+            }
+
+            return imageResult;
         }
     }
 }

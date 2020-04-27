@@ -33,7 +33,8 @@ namespace OftenColorBotLibrary
             new Dictionary<string, object>() 
             { 
                 ["mode"] = null, 
-                ["amount"] = "5" 
+                ["amount"] = "5",
+                ["modePalette"] = "без изображения"
             };
     }
 }

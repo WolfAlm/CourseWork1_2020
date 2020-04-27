@@ -62,6 +62,7 @@ namespace CourseWorkForm
             // передать в параметры метода LogFromCallback.
             string text;
             InlineKeyboardMarkup keyboard;
+            UtilitiesBot.State state;
 
             switch (eventUser.CallbackQuery.Data)
             {
@@ -102,32 +103,52 @@ namespace CourseWorkForm
                 // Выбор режима.
                 case "mode":
                     LogFromCallback(user, UtilitiesBot.State.S_Mode,
-                        UtilitiesBot.infoText["mode"] + user.Settings["mode"],
+                        UtilitiesBot.infoText["mode"] + $"*{user.Settings["mode"]}*",
                         UtilitiesBot.keyboards["mode"], eventUser);
                     break;
                 // Выбранный режим.
-                case "artist":
-                case "colorblind":
+                case "профи":
+                case "любитель":
                     user.Settings["mode"] = eventUser.CallbackQuery.Data;
 
                     if ((int)user.State == 6)
                     {
                         text = UtilitiesBot.infoText["setting"];
                         keyboard = UtilitiesBot.keyboards["setting"];
+                        state = UtilitiesBot.State.S_Settings;
                     }
                     else
                     {
                         text = UtilitiesBot.infoText["info"];
                         keyboard = UtilitiesBot.keyboards["info"];
+                        state = UtilitiesBot.State.S_Info;
                     }
 
-                    LogFromCallback(user, UtilitiesBot.State.S_Info, text, keyboard, eventUser);
+                    LogFromCallback(user, state, text, keyboard, eventUser);
+                    break;
+                case "дальтоник":
+                    await bot.AnswerCallbackQueryAsync(eventUser.CallbackQuery.Id, 
+                        $"Извините, этот режим в разработке.");
+                    break;
+                case "modePalette":
+                    LogFromCallback(user, UtilitiesBot.State.S_ModePalette,
+                            UtilitiesBot.infoText["modePalette"] + $"*{user.Settings["modePalette"]}*",
+                            UtilitiesBot.keyboards["modePalette"], eventUser);
+                    break;
+                case "слева":
+                case "справа":
+                case "внизу":
+                case "сверху":
+                case "без изображения":
+                    user.Settings["modePalette"] = eventUser.CallbackQuery.Data;
+                    LogFromCallback(user, UtilitiesBot.State.S_Settings, 
+                        UtilitiesBot.infoText["setting"], UtilitiesBot.keyboards["setting"], eventUser);
                     break;
                 case "back":
-                    UtilitiesBot.State state;
                     // В зависимости от нахождения пользователя в меню, будет меняться структура
                     // вывода информации после нажатия на back.
-                    if ((int)user.State == 3 || (int)user.State == 4 || (int)user.State == 6)
+                    if ((int)user.State == 3 || (int)user.State == 4 || (int)user.State == 6
+                        || (int)user.State == 7)
                     {
                         text = UtilitiesBot.infoText["setting"];
                         keyboard = UtilitiesBot.keyboards["setting"];
@@ -404,11 +425,11 @@ namespace CourseWorkForm
             {
                 InfoInLog($"{DateTime.Now} Ошибка ввода-вывода.");
             }
-            catch (Exception error)
-            {
-                InfoInLog($"{DateTime.Now} Произошел конец света, упс." +
-                    $"\n{error.Message}");
-            }
+            //catch (Exception error)
+            //{
+            //    InfoInLog($"{DateTime.Now} Произошел конец света, упс." +
+            //        $"\n{error.Message}");
+            //}
         }
 
         /// <summary>

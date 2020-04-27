@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using OftenColorBotLibrary.KMeans;
 
@@ -124,18 +125,18 @@ namespace OftenColorBotLibrary
         {
             // Здесь будем сохранять два объединенные изображения: палитра и оригинал
             Bitmap imageResult = new Bitmap(1, 1);
-            // Здесь задаем координаты начала.
-            int sizeForColor = 0, startXoriginal = 0, startXpalette = 0, startYoriginal = 0, startYpalette = 0;
-            // Необходимость повернуть.
-            bool necessaryFlip = false;
+            // Создаем палитру.
+            Bitmap imagePalette = new Bitmap(1, 1);
 
+            // Здесь задаем координаты начала.
+            int startXoriginal = 0, startXpalette = 0, startYoriginal = 0,
+                startYpalette = 0;
             // По режиму пользователя будет определяться, с какой стороны записывать палитру.
             switch (modePalette)
             {
                 case "справа":
                 case "слева":
                     imageResult = new Bitmap(imageOriginal.Width + 200, imageOriginal.Height);
-                    sizeForColor = (imageOriginal.Height - 4 * (colors.Length + 1)) / colors.Length;
 
                     if (modePalette == "справа")
                     {
@@ -145,11 +146,13 @@ namespace OftenColorBotLibrary
                     {
                         startXoriginal = 200;
                     }
+
+                    imagePalette = CreatePalette(colors, new Bitmap(200, imageOriginal.Height),
+                            mode, 192, (imageOriginal.Height - 4 * (colors.Length + 1)) / colors.Length);
                     break;
                 case "сверху":
                 case "cнизу":
                     imageResult = new Bitmap(imageOriginal.Width, imageOriginal.Height + 200);
-                    sizeForColor = (imageOriginal.Width - 4 * (colors.Length + 1)) / colors.Length;
 
                     if (modePalette == "сверху")
                     {
@@ -160,18 +163,10 @@ namespace OftenColorBotLibrary
                         startYpalette = imageOriginal.Height;
                     }
 
-                    necessaryFlip = true;
+                    imagePalette = CreatePalette(colors, new Bitmap(200, imageOriginal.Width),
+                            mode, 192, (imageOriginal.Width - 4 * (colors.Length + 1)) / colors.Length);
+                    imagePalette.RotateFlip(RotateFlipType.Rotate270FlipNone);
                     break;
-            }
-
-            // Создаем палитру.
-            Bitmap imagePalette = CreatePalette(colors, new Bitmap(200, imageOriginal.Height), 
-                mode, 192, sizeForColor);
-            
-            // Какая-то проблема с недорисовкой здесь :( TODO FIX 
-            if (necessaryFlip)
-            {
-                imagePalette.RotateFlip(RotateFlipType.Rotate270FlipNone);
             }
 
             // Объединяем изображения.

@@ -25,6 +25,7 @@ namespace OftenColorBotLibrary
         private byte[] data;
         // Количество байт в одной строке.
         private int stride;
+        // Данные об изображении в байтах.
         private BitmapData imageData;
         private Bitmap image;
 
@@ -48,8 +49,7 @@ namespace OftenColorBotLibrary
         }
 
         /// <summary>
-        /// Возвращает пиксел из исходнго изображения.
-        /// Либо заносит пиксел в выходной буфер.
+        /// Возвращает пиксель из исходного изображения.
         /// </summary>
         public Color this[int x, int y]
         {
@@ -75,7 +75,6 @@ namespace OftenColorBotLibrary
 
         /// <summary>
         /// Заносит в bitmap выходной буфер и снимает лок.
-        /// Этот метод обязателен к исполнению (либо явно, лмбо через using)
         /// </summary>
         public void Dispose()
         {

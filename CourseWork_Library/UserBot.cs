@@ -17,6 +17,11 @@ namespace OftenColorBotLibrary
         public long ChatId { get; set; }
 
         /// <summary>
+        /// Последнее сообщение от бота, которое нужно будет удалять.
+        /// </summary>
+        public long MessageId { get; set; }
+
+        /// <summary>
         /// В каком этапе меню находится пользователь. 
         /// </summary>
         public UtilitiesBot.State State { get; set; }

@@ -11,14 +11,15 @@ namespace OftenColorBotLibrary.KMeans
         static Random random = new Random();
 
         /// <summary>
-        /// База пикселей, на которой нужно вычислить центры кластеров и сопоставить их с этой базой.
+        /// База данных в виде пикселей, на которой нужно вычислить центры кластеров и сопоставить 
+        /// их с этой базой.
         /// </summary>
         public double[][] Pixels { get; private set; }
 
         /// <summary>
-        /// Расстояние Евклида.
+        /// Евклидово расстояние.
         /// </summary>
-        private EuclideanSquare Euclidian { get; }
+        private EuclideanSquare Euclidean { get; }
 
         /// <summary>
         /// Коллекция кластеров.
@@ -44,7 +45,7 @@ namespace OftenColorBotLibrary.KMeans
         {
             Pixels = pixels;
             Clusters = new ClusterCollection(k);
-            Euclidian = new EuclideanSquare(Clusters, tolerance);
+            Euclidean = new EuclideanSquare(Clusters, tolerance);
 
             Labels = KMeansAlgorithm();
         }
@@ -73,39 +74,6 @@ namespace OftenColorBotLibrary.KMeans
             }
 
             return quanitityPixels.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
-        }
-
-        /// <summary>
-        /// Сначала мы приводим в необходимый вид центры кластеров в представление вида их 
-        /// координатов от 0 до 255, чтобы не было дробных выражений, так как иначе Color не будет 
-        /// считывать нормально.
-        /// </summary>
-        private void NecessaryView()
-        {
-            // Приводим координаты центроида кластеров в необходимый вид.
-            for (int i = 0; i < Clusters.K; i++)
-            {
-                for (int j = 0; j < Clusters.Centroids[i].Length; j++)
-                {
-                    Clusters.Centroids[i][j] = (int)Clusters.Centroids[i][j];
-                }
-            }
-        }
-
-        /// <summary>
-        /// Проецирует для каждого пикселя самый ближайший кластер, который был
-        /// уже вычислен в основном методе KMeans.
-        /// </summary>
-        /// <returns>Возвращает массив пикселей с кластерами.</returns>
-        public double[][] ProjectionsToPixels()
-        {
-            // Присваиваем каждому пикселю ближайший кластер.
-            for (int i = 0; i < Pixels.Length; i++)
-            {
-                Pixels[i] = Clusters.Centroids[Labels[i]];
-            }
-
-            return Pixels;
         }
 
         /// <summary>
@@ -169,7 +137,7 @@ namespace OftenColorBotLibrary.KMeans
                     double weight = weights[i]; // какая-то параша тоже
 
                     // Получаем ближайший кластер для этой точки.
-                    int c = labels[i] = Euclidian.PickClusterForPoint(pixel);
+                    int c = labels[i] = Euclidean.PickClusterForPoint(pixel);
 
                     // Теперь получаем центр этого ближайшего кластера.
                     double[] centroid = newCentroids[c];
@@ -203,7 +171,7 @@ namespace OftenColorBotLibrary.KMeans
 
                 // Алгоритм остановится, когда больше не будут существенных изменений
                 // в центроидах и это регулируется с помощью параметра tolerance.
-                flagShouldStop = AlgorithmConverged(centroids, newCentroids);
+                flagShouldStop = ConvergedCentroid(centroids, newCentroids);
 
                 // Присваиваем центроидам координаты новых центроидов.
                 Parallel.For(0, k, i =>
@@ -226,7 +194,7 @@ namespace OftenColorBotLibrary.KMeans
         /// <param name="newCentroids">Новый центроид кластера.</param>
         /// <returns>Возвращает <see langword="true"/> если все кластеры имеют меньше, чем
         /// <see param="threshold"/>. Иначе возвращает <see langword="false"/>.</returns>
-        private bool AlgorithmConverged(double[][] centroids, double[][] newCentroids)
+        private bool ConvergedCentroid(double[][] centroids, double[][] newCentroids)
         {
             for (int i = 0; i < centroids.Length; i++)
             {
@@ -235,7 +203,7 @@ namespace OftenColorBotLibrary.KMeans
 
                 for (int j = 0; j < centroid.Length; j++)
                 {
-                    if (Math.Abs((centroid[j] - newCentroid[j]) / centroid[j]) >= Euclidian.Tolerance)
+                    if (Math.Abs((centroid[j] - newCentroid[j]) / centroid[j]) >= Euclidean.Tolerance)
                         return false;
                 }
             }
@@ -268,11 +236,11 @@ namespace OftenColorBotLibrary.KMeans
                 {
                     // Для каждой точки мы считаем расстояние между точкой и центрами кластеров.
                     var x = Pixels[i];
-                    double min = Euclidian.Distance(x, Clusters.Centroids[0]);
+                    double min = Euclidean.Distance(x, Clusters.Centroids[0]);
                     // При наличии более одного кластера.
                     for (int j = 1; j < c; j++)
                     {
-                        double d = Euclidian.Distance(x, Clusters.Centroids[j]);
+                        double d = Euclidean.Distance(x, Clusters.Centroids[j]);
                         // Если есть расстояние между точкой и центром меньшее, то присваиваем его.
                         if (d < min)
                         {
@@ -320,5 +288,38 @@ namespace OftenColorBotLibrary.KMeans
                 index.Add(idx);
             }
         }
+
+        /// <summary>
+        /// Мы приводим в необходимый вид центры кластеров в представление вида их 
+        /// координатов от 0 до 255, чтобы не было дробных выражений, так как иначе Color не будет 
+        /// считывать нормально.
+        /// </summary>
+        //private void NecessaryView()
+        //{
+        //    // Приводим координаты центроида кластеров в необходимый вид.
+        //    for (int i = 0; i < Clusters.K; i++)
+        //    {
+        //        for (int j = 0; j < Clusters.Centroids[i].Length; j++)
+        //        {
+        //            Clusters.Centroids[i][j] = (int)Clusters.Centroids[i][j];
+        //        }
+        //    }
+        //}
+
+        /// <summary>
+        /// Проецирует для каждого пикселя самый ближайший кластер, который был
+        /// уже вычислен в основном методе KMeans.
+        /// </summary>
+        /// <returns>Возвращает массив пикселей с кластерами.</returns>
+        //public double[][] ProjectionsToPixels()
+        //{
+        //    // Присваиваем каждому пикселю ближайший кластер.
+        //    for (int i = 0; i < Pixels.Length; i++)
+        //    {
+        //        Pixels[i] = Clusters.Centroids[Labels[i]];
+        //    }
+
+        //    return Pixels;
+        //}
     }
 }

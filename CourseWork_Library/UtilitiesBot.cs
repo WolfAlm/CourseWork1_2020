@@ -164,7 +164,7 @@ namespace OftenColorBotLibrary
                             new []
                             {
                                 InlineKeyboardButton.WithCallbackData("Сверху", "сверху"),
-                                InlineKeyboardButton.WithCallbackData("Внизу", "внизу")
+                                InlineKeyboardButton.WithCallbackData("Cнизу", "cнизу")
                             },
                             new []
                             {

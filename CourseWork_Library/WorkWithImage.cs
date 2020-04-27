@@ -33,7 +33,8 @@ namespace OftenColorBotLibrary
             }
             else
             {
-                return CreatePalettePhoto(colors, image, user.Settings["modePalette"].ToString());
+                return CreatePalettePhoto(colors, image, user.Settings["modePalette"].ToString(),
+                    user.Settings["mode"].ToString());
             }
         }
 
@@ -104,30 +105,63 @@ namespace OftenColorBotLibrary
         /// </summary>
         /// <param name="colors">Из каких цветов создавать палитру.</param>
         /// <param name="originalImage">Изображение, с чем будем склеивать палитру.</param>
+        /// <param name="modePalette">Какое расположение палитры у пользователя.</param>
         /// <param name="mode">Какой режим у пользователя.</param>
         /// <returns>Возвращает исходное изображение с палитрой.</returns>
-        static private Bitmap CreatePalettePhoto(Color[] colors, Bitmap originalImage, string mode)
+        static private Bitmap CreatePalettePhoto(Color[] colors, Bitmap originalImage, string modePalette,
+            string mode)
         {
             Bitmap imageResult = new Bitmap(1, 1);
-            int sizeForColor = 0;
+            int sizeForColor = 0, startXoriginal = 0, startXpalette = 0, startYoriginal = 0, startYpalette = 0;
+            bool necessaryFlip = false;
 
-            switch (mode)
+            switch (modePalette)
             {
                 case "справа":
+                case "слева":
                     imageResult = new Bitmap(originalImage.Width + 200, originalImage.Height);
                     sizeForColor = (originalImage.Height - 4 * (colors.Length + 1)) / colors.Length;
+
+                    if (modePalette == "справа")
+                    {
+                        startXpalette = originalImage.Width;
+                    }
+                    else
+                    {
+                        startXoriginal = 200;
+                    }
                     break;
-                case "снизу":
+                case "сверху":
+                case "cнизу":
+                    imageResult = new Bitmap(originalImage.Width, originalImage.Height + 200);
+                    sizeForColor = (originalImage.Width - 4 * (colors.Length + 1)) / colors.Length;
+
+                    if (modePalette == "сверху")
+                    {
+                        startYoriginal = 200;
+                    }
+                    else
+                    {
+                        startYpalette = originalImage.Height;
+                    }
+
+                    necessaryFlip = true;
                     break;
             }
 
             Bitmap imagePalette = CreatePalette(colors, new Bitmap(200, originalImage.Height), 
                 mode, 192, sizeForColor);
+            
+            // Какая-то проблема с недорисовкой здесь :(
+            if (necessaryFlip)
+            {
+                imagePalette.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            }
 
             using (Graphics final = Graphics.FromImage(imageResult))
             {
-                final.DrawImage(originalImage, 0, 0);
-                final.DrawImage(imagePalette, originalImage.Width, 0);
+                final.DrawImage(originalImage, startXoriginal, startYoriginal);
+                final.DrawImage(imagePalette, startXpalette, startYpalette);
             }
 
             return imageResult;

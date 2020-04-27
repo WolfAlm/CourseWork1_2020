@@ -137,7 +137,7 @@ namespace CourseWorkForm
                     break;
                 case "слева":
                 case "справа":
-                case "внизу":
+                case "cнизу":
                 case "сверху":
                 case "без изображения":
                     user.Settings["modePalette"] = eventUser.CallbackQuery.Data;
@@ -324,6 +324,9 @@ namespace CourseWorkForm
         {
             try
             {
+                Message temporaryM = await bot.SendTextMessageAsync(chatId: message.Chat,
+                                        text: "Ожидайте, пожалуйста, результат...");
+
                 Telegram.Bot.Types.File file;
 
                 // Проверяем, какой тип файла, так как в зависимости от этого меняется алгоритм
@@ -366,6 +369,7 @@ namespace CourseWorkForm
                     {
                         await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
                     }
+                    await bot.DeleteMessageAsync(message.Chat.Id, temporaryM.MessageId);
 
                     messageLast = await bot.SendTextMessageAsync(
                                         chatId: message.Chat,

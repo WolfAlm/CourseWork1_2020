@@ -56,32 +56,32 @@ namespace OftenColorBotLibrary
                     {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Загрузить фото", "upload"),
-                                InlineKeyboardButton.WithCallbackData("Настройки", "settings")
+                                InlineKeyboardButton.WithCallbackData("📥 Загрузить фото", "upload"),
+                                InlineKeyboardButton.WithCallbackData("⚙ Настройки", "settings")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithUrl("Контакты", "https://t.me/wolfalm"),
+                                InlineKeyboardButton.WithUrl("📲 Контакты", "https://t.me/wolfalm"),
                             }
                     }),
             ["setting"] = new InlineKeyboardMarkup(new[]
                     {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Количество цвета",
+                                InlineKeyboardButton.WithCallbackData("🔢 Количество цвета",
                                     "numberOfPixels")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Выбор режима", "mode")
+                                InlineKeyboardButton.WithCallbackData("🛠 Выбор режима", "mode")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Выбор вида палитры", "modePalette")
+                                InlineKeyboardButton.WithCallbackData("🌅 Выбор вида палитры", "modePalette")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Назад", "back")
+                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back")
                             }
                     }),
             ["numberOfPixels"] = new InlineKeyboardMarkup(new[]
@@ -107,68 +107,68 @@ namespace OftenColorBotLibrary
                             new []
                             {
                                 InlineKeyboardButton.WithCallbackData("10"),
-                                InlineKeyboardButton.WithCallbackData("Назад", "back")
+                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back")
                             }
                     }),
             ["pickNumberPix"] = new InlineKeyboardMarkup(new[]
                     {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Другое число", "numberOfPixels"),
-                                InlineKeyboardButton.WithCallbackData("Подтвердить", "back")
+                                InlineKeyboardButton.WithCallbackData("✖️ Другое число", "numberOfPixels"),
+                                InlineKeyboardButton.WithCallbackData("✔️ Подтвердить", "back")
                             }
                     }),
             ["back"] = new InlineKeyboardMarkup(new[]
                     {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Назад", "back")
+                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back")
                             }
                     }),
             ["start"] = new InlineKeyboardMarkup(new[]
                     {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Профи", "профи"),
-                                InlineKeyboardButton.WithCallbackData("Любитель", "любитель")
+                                InlineKeyboardButton.WithCallbackData("👩🏼‍🎨 Профи", "профи"),
+                                InlineKeyboardButton.WithCallbackData("👨🏼‍💼 Любитель", "любитель")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Дальтоник", "дальтоник")
+                                InlineKeyboardButton.WithCallbackData("🦹🏼‍♀️ Дальтоник", "дальтоник")
                             }
                     }),
             ["mode"] = new InlineKeyboardMarkup(new[]
                     {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Профи", "профи"),
-                                InlineKeyboardButton.WithCallbackData("Любитель", "любитель")
+                                InlineKeyboardButton.WithCallbackData("👩🏼‍🎨 Профи", "профи"),
+                                InlineKeyboardButton.WithCallbackData("👨🏼‍💼 Любитель", "любитель")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Дальтоник", "дальтоник"),
-                                InlineKeyboardButton.WithCallbackData("Назад", "back")
+                                InlineKeyboardButton.WithCallbackData("🦹🏼‍♀️ Дальтоник", "дальтоник"),
+                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back")
                             }
                     }),
             ["modePalette"] = new InlineKeyboardMarkup(new[]
                     {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Без изображения", "без изображения")
+                                InlineKeyboardButton.WithCallbackData("⏹ Без изображения", "без изображения")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Слева", "слева"),
-                                InlineKeyboardButton.WithCallbackData("Справа", "справа")
+                                InlineKeyboardButton.WithCallbackData("⬅ Слева", "слева"),
+                                InlineKeyboardButton.WithCallbackData("➡ Справа", "справа")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Сверху", "сверху"),
-                                InlineKeyboardButton.WithCallbackData("Cнизу", "cнизу")
+                                InlineKeyboardButton.WithCallbackData("⬆ Сверху", "сверху"),
+                                InlineKeyboardButton.WithCallbackData("⬇ Cнизу", "cнизу")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("Назад", "back")
+                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back")
                             }
                     }),
         };

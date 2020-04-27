@@ -358,6 +358,8 @@ namespace CourseWorkForm
                 // потока.
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
+                    await bot.DeleteMessageAsync(message.Chat.Id, temporaryM.MessageId);
+
                     image.Save(memoryStream, ImageFormat.Png);
                     memoryStream.Position = 0;
                     await bot.SendPhotoAsync(
@@ -367,9 +369,15 @@ namespace CourseWorkForm
 
                     if (messageLast != null)
                     {
-                        await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+                        try
+                        {
+                            await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+                        }
+                        catch (Telegram.Bot.Exceptions.ApiRequestException error)
+                        {
+                            InfoInLog($"{DateTime.Now} {error.Message}");
+                        }
                     }
-                    await bot.DeleteMessageAsync(message.Chat.Id, temporaryM.MessageId);
 
                     messageLast = await bot.SendTextMessageAsync(
                                         chatId: message.Chat,
@@ -429,11 +437,12 @@ namespace CourseWorkForm
             {
                 InfoInLog($"{DateTime.Now} Ошибка ввода-вывода.");
             }
-            //catch (Exception error)
-            //{
-            //    InfoInLog($"{DateTime.Now} Произошел конец света, упс." +
-            //        $"\n{error.Message}");
-            //}
+            catch (Exception error)
+            {
+                InfoInLog($"{DateTime.Now} Произошел конец света, упс." +
+                    $"\n{error.Message}");
+                // TODO BIG FILES
+            }
         }
 
         /// <summary>

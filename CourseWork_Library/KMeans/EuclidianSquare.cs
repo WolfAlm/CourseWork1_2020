@@ -1,22 +1,26 @@
 ﻿namespace OftenColorBotLibrary.KMeans
 {
-    class EuclidianSquare
+    class EuclideanSquare
     {
         /// <summary>
         /// Мы создаем евклидовую метрику на основе данных кластеров и tolerance
         /// </summary>
         /// <param name="clusters">Коллекция кластеров.</param>
         /// <param name="tolerance">На каком моменте нужно остановить вычисления.</param>
-        public EuclidianSquare(ClusterCollection clusters, double tolerance = 0.00001)
+        public EuclideanSquare(ClusterCollection clusters, double tolerance = 0.00001)
         {
             Tolerance = tolerance;
             Clusters = clusters;
         }
 
+        /// <summary>
+        /// Коллекция кластеров.
+        /// </summary>
         private ClusterCollection Clusters { get; set; }
 
         /// <summary>
-        /// На каком моменте нужно остановить вычисления центроидов кластеров.
+        /// На какой разнице между центроидами кластеров нужно остановить вычисления 
+        /// новых центроидов кластеров.
         /// </summary>
         internal double Tolerance { get; }
 
@@ -39,6 +43,32 @@
             return sum;
         }
 
+        /// <summary>
+        /// Подбирает к точке самый ближайший кластер.
+        /// </summary>
+        /// <param name="pixel">Точка(пиксель), к которой подбирается наиближайший кластер.</param>
+        /// <returns>Возвращает индекс кластера.</returns>
+        public int PickClusterForPoint(double[] pixel)
+        {
+            // Для начала вычисляется первый минимум.
+            double min = Distance(pixel, Clusters.Centroids[0]);
+            int indexMin = 0;
+            // После чего вычисялем последующие расстояния от новых кластеров.
+            for (int i = 1; i < Clusters.K; i++)
+            {
+                double newMin = Distance(pixel, Clusters.Centroids[i]);
+
+                if (newMin < min)
+                {
+                    min = newMin;
+                    indexMin = i;
+                }
+            }
+            // Возвращаем индекс кластера, где было самое минимальное расстояние для пикселя.
+            return indexMin;
+        }
+
+
         //public int[] PickClusterForPoints(double[][] pixels)
         //{
         //    int[] result = new int[pixels.Length];
@@ -50,29 +80,5 @@
 
         //    return result;
         //}
-
-        /// <summary>
-        /// Подбирает к точке самый ближайший кластер.
-        /// </summary>
-        /// <param name="pixel">Точка(пиксель), к которой подбирается наиближайший кластер.</param>
-        /// <returns>Возвращает индекс кластера.</returns>
-        public int PickClusterForPoint(double[] pixel)
-        {
-            double min = Distance(pixel, Clusters.Centroids[0]);
-            int indexMin = 0;
-
-            for (int i = 1; i < Clusters.K; i++)
-            {
-                double newMin = Distance(pixel, Clusters.Centroids[i]);
-
-                if (newMin < min)
-                {
-                    min = newMin;
-                    indexMin = i;
-                }
-            }
-
-            return indexMin;
-        }
     }
 }

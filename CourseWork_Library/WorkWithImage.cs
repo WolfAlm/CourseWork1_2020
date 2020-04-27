@@ -6,6 +6,13 @@ namespace OftenColorBotLibrary
 {
     public class WorkWithImage
     {
+        /// <summary>
+        /// Получает изображение и анализирует его на доминирующие цвета, после чего, исходя из
+        /// параметров пользователя, будет сформировано изображение под требования пользователя.
+        /// </summary>
+        /// <param name="image">Изображение, которое нужно анализировать.</param>
+        /// <param name="user">Чьи параметры и настройки будем принимать.</param>
+        /// <returns>Возвращает палитру с заданными параметрами пользователя.</returns>
         public static Bitmap GetResult(Bitmap image, UserBot user)
         {
             int amountColor = int.Parse(user.Settings["amount"].ToString());
@@ -39,8 +46,7 @@ namespace OftenColorBotLibrary
         }
 
         /// <summary>
-        /// Получает весь список пикселей и их количество с изображения, записывая их данные в виде
-        /// RGB.
+        /// Получает весь список пикселей с изображения, записывая их данные в виде RGB.
         /// </summary>
         /// <param name="image">Изображение, из которого нужно вытягивать массив пикселей.</param>
         /// <returns>Получаем массив пикселей с их данными в виде RGB.</returns>
@@ -77,13 +83,17 @@ namespace OftenColorBotLibrary
         {
             using (Graphics flagGraphics = Graphics.FromImage(image))
             {
+                // Заливаем картинку белым цветом.
                 flagGraphics.Clear(Color.White);
+                // Задаем начало координат.
                 int y = 4;
+                // По очереди создаем прямоугольники с определенным цветом.
                 for (int i = 0; i < colors.Length; i++)
                 {
-                    // Создаем прямоугольники с определенным цветом.
                     flagGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, xSize, ySize);
 
+                    // TODO: Сделать для разной палитры.
+                    // Записывает текст на палитру.
                     if (mode == "профи")
                     {
                         flagGraphics.FillRectangle(Brushes.White, new Rectangle(164, 30 + y, 180, 40));
@@ -93,6 +103,7 @@ namespace OftenColorBotLibrary
                             new Font("Arial", 25), Brushes.Black,
                             new Rectangle(164, 30 + y, 180, 40), stringFormat);
                     }
+
                     y += ySize + 4;
                 }
             }
@@ -104,27 +115,31 @@ namespace OftenColorBotLibrary
         /// Создает палитру из доминирующих цветов и пришивает ее к фотографии.
         /// </summary>
         /// <param name="colors">Из каких цветов создавать палитру.</param>
-        /// <param name="originalImage">Изображение, с чем будем склеивать палитру.</param>
+        /// <param name="imageOriginal">Изображение, с чем будем склеивать палитру.</param>
         /// <param name="modePalette">Какое расположение палитры у пользователя.</param>
         /// <param name="mode">Какой режим у пользователя.</param>
         /// <returns>Возвращает исходное изображение с палитрой.</returns>
-        static private Bitmap CreatePalettePhoto(Color[] colors, Bitmap originalImage, string modePalette,
+        static private Bitmap CreatePalettePhoto(Color[] colors, Bitmap imageOriginal, string modePalette,
             string mode)
         {
+            // Здесь будем сохранять два объединенные изображения: палитра и оригинал
             Bitmap imageResult = new Bitmap(1, 1);
+            // Здесь задаем координаты начала.
             int sizeForColor = 0, startXoriginal = 0, startXpalette = 0, startYoriginal = 0, startYpalette = 0;
+            // Необходимость повернуть.
             bool necessaryFlip = false;
 
+            // По режиму пользователя будет определяться, с какой стороны записывать палитру.
             switch (modePalette)
             {
                 case "справа":
                 case "слева":
-                    imageResult = new Bitmap(originalImage.Width + 200, originalImage.Height);
-                    sizeForColor = (originalImage.Height - 4 * (colors.Length + 1)) / colors.Length;
+                    imageResult = new Bitmap(imageOriginal.Width + 200, imageOriginal.Height);
+                    sizeForColor = (imageOriginal.Height - 4 * (colors.Length + 1)) / colors.Length;
 
                     if (modePalette == "справа")
                     {
-                        startXpalette = originalImage.Width;
+                        startXpalette = imageOriginal.Width;
                     }
                     else
                     {
@@ -133,8 +148,8 @@ namespace OftenColorBotLibrary
                     break;
                 case "сверху":
                 case "cнизу":
-                    imageResult = new Bitmap(originalImage.Width, originalImage.Height + 200);
-                    sizeForColor = (originalImage.Width - 4 * (colors.Length + 1)) / colors.Length;
+                    imageResult = new Bitmap(imageOriginal.Width, imageOriginal.Height + 200);
+                    sizeForColor = (imageOriginal.Width - 4 * (colors.Length + 1)) / colors.Length;
 
                     if (modePalette == "сверху")
                     {
@@ -142,26 +157,30 @@ namespace OftenColorBotLibrary
                     }
                     else
                     {
-                        startYpalette = originalImage.Height;
+                        startYpalette = imageOriginal.Height;
                     }
 
                     necessaryFlip = true;
                     break;
             }
 
-            Bitmap imagePalette = CreatePalette(colors, new Bitmap(200, originalImage.Height), 
+            // Создаем палитру.
+            Bitmap imagePalette = CreatePalette(colors, new Bitmap(200, imageOriginal.Height), 
                 mode, 192, sizeForColor);
             
-            // Какая-то проблема с недорисовкой здесь :(
+            // Какая-то проблема с недорисовкой здесь :( TODO FIX 
             if (necessaryFlip)
             {
                 imagePalette.RotateFlip(RotateFlipType.Rotate270FlipNone);
             }
 
+            // Объединяем изображения.
             using (Graphics final = Graphics.FromImage(imageResult))
             {
-                final.DrawImage(originalImage, startXoriginal, startYoriginal);
-                final.DrawImage(imagePalette, startXpalette, startYpalette);
+                final.DrawImage(imageOriginal, startXoriginal, startYoriginal, 
+                    imageOriginal.Width, imageOriginal.Height);
+                final.DrawImage(imagePalette, startXpalette, startYpalette, imagePalette.Width,
+                    imagePalette.Height);
             }
 
             return imageResult;

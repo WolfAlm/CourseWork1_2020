@@ -23,6 +23,6 @@
         /// <summary>
         /// Количество кластеров.
         /// </summary>
-        public int K { get; private set; }
+        public int K { get; }
     }
 }

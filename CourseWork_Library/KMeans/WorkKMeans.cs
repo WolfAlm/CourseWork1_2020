@@ -18,12 +18,12 @@ namespace OftenColorBotLibrary.KMeans
         /// <summary>
         /// Расстояние Евклида.
         /// </summary>
-        private EuclidianSquare Euclidian { get; }
+        private EuclideanSquare Euclidian { get; }
 
         /// <summary>
         /// Коллекция кластеров.
         /// </summary>
-        private ClusterCollection Clusters { get; set; }
+        private ClusterCollection Clusters { get; }
 
         /// <summary>
         /// База меток, которая обозначает, какой кластер нужен для каждого
@@ -44,11 +44,15 @@ namespace OftenColorBotLibrary.KMeans
         {
             Pixels = pixels;
             Clusters = new ClusterCollection(k);
-            Euclidian = new EuclidianSquare(Clusters, tolerance);
+            Euclidian = new EuclideanSquare(Clusters, tolerance);
 
             Labels = KMeansAlgorithm();
         }
 
+        /// <summary>
+        /// Считаем количество пикселей и исходя из количества упорядочиваем их по убыванию.
+        /// </summary>
+        /// <returns>Вовзращает список цветов с их количеством.</returns>
         public Dictionary<Color, int> QuanitityPixels()
         {
             Dictionary<Color, int> quanitityPixels = new Dictionary<Color, int>();

@@ -3,13 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseWork", "CourseWork\CourseWork.csproj", "{AC82C6BF-9868-4C6A-B644-6EF925D98308}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OftenColorBotForm", "CourseWorkForm\OftenColorBotForm.csproj", "{FD0FD761-ABBD-4FC9-9DD9-35A60FB4BBA7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OftenColorBotLibrary", "CourseWork_Library\OftenColorBotLibrary.csproj", "{BB699DF5-BBE5-4E8A-9F5A-9B37772FBDA8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApp1", "WindowsFormsApp1\WindowsFormsApp1.csproj", "{894C2D66-0B2C-48C3-8B52-AD226324F557}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AC82C6BF-9868-4C6A-B644-6EF925D98308}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC82C6BF-9868-4C6A-B644-6EF925D98308}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC82C6BF-9868-4C6A-B644-6EF925D98308}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC82C6BF-9868-4C6A-B644-6EF925D98308}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FD0FD761-ABBD-4FC9-9DD9-35A60FB4BBA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FD0FD761-ABBD-4FC9-9DD9-35A60FB4BBA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD0FD761-ABBD-4FC9-9DD9-35A60FB4BBA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -29,10 +21,6 @@ Global
 		{BB699DF5-BBE5-4E8A-9F5A-9B37772FBDA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB699DF5-BBE5-4E8A-9F5A-9B37772FBDA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB699DF5-BBE5-4E8A-9F5A-9B37772FBDA8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{894C2D66-0B2C-48C3-8B52-AD226324F557}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{894C2D66-0B2C-48C3-8B52-AD226324F557}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{894C2D66-0B2C-48C3-8B52-AD226324F557}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{894C2D66-0B2C-48C3-8B52-AD226324F557}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

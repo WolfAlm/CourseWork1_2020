@@ -61,7 +61,7 @@ namespace OftenColorBotLibrary
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithUrl("📲 Контакты", "https://t.me/wolfalm"),
+                                InlineKeyboardButton.WithUrl("📲 Связаться с разработчиком", "https://t.me/wolfalm"),
                             }
                     }),
             ["setting"] = new InlineKeyboardMarkup(new[]
@@ -77,11 +77,14 @@ namespace OftenColorBotLibrary
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("🌅 Выбор вида палитры", "modePalette")
+                                InlineKeyboardButton.WithCallbackData("🌅 Выбор вида палитры", 
+                                    "modePalette")
                             },
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back")
+                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back"),
+                                InlineKeyboardButton.WithCallbackData("📥 Перейти к загрузке фото", 
+                                    "upload"),
                             }
                     }),
             ["numberOfPixels"] = new InlineKeyboardMarkup(new[]
@@ -118,11 +121,12 @@ namespace OftenColorBotLibrary
                                 InlineKeyboardButton.WithCallbackData("✔️ Подтвердить", "back")
                             }
                     }),
-            ["back"] = new InlineKeyboardMarkup(new[]
+            ["upload"] = new InlineKeyboardMarkup(new[]
                     {
                             new []
                             {
-                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back")
+                                InlineKeyboardButton.WithCallbackData("🔙 Назад", "back"),
+                                InlineKeyboardButton.WithCallbackData("⚙ Настройки", "settings")
                             }
                     }),
             ["start"] = new InlineKeyboardMarkup(new[]

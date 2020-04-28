@@ -89,12 +89,7 @@ namespace OftenColorBotLibrary.KMeans
             int rows = Pixels.Length;
             int k = Clusters.K;
 
-            var count = new double[k]; // какая-то параша
-            double[] weights = new double[rows]; // какая то параша
-            for (int i = 0; i < rows; i++)
-            {
-                weights[i] = 1;
-            }
+            var count = new double[k];
 
             // Создаем базу меток для каждого пикселя, чтобы присваивать номера ближайших кластеров.
             int[] labels = new int[rows];
@@ -133,8 +128,6 @@ namespace OftenColorBotLibrary.KMeans
                 {
                     // Получаем пиксель.
                     double[] pixel = Pixels[i];
-                    // Ее весовую категорию.
-                    double weight = weights[i]; // какая-то параша тоже
 
                     // Получаем ближайший кластер для этой точки.
                     int c = labels[i] = Euclidean.PickClusterForPoint(pixel);
@@ -144,8 +137,8 @@ namespace OftenColorBotLibrary.KMeans
 
                     lock (syncObjects[c])
                     {
-                        // Increase the cluster's sample counter
-                        count[c] += weight; // точно такая же параша
+                        // Увеличить счетчик образцов кластера.
+                        count[c] += 1;
 
                         // Накапливаем в центрах кластеров.
                         for (int j = 0; j < pixel.Length; j++)
@@ -155,9 +148,8 @@ namespace OftenColorBotLibrary.KMeans
                     }
                 });
 
-                // Next we will compute each cluster's new centroid
-                //  by dividing the accumulated sums by the number of
-                //  samples in each cluster, thus averaging its members.
+                // Далее мы вычислим новый центроид каждого кластера путем деления накопленных сумм
+                // на количество выборок в каждом кластере, таким образом усредняя его параметры.
                 Parallel.For(0, k, i =>
                 {
                     double sum = count[i];
@@ -231,8 +223,8 @@ namespace OftenColorBotLibrary.KMeans
             for (int c = 1; c < Clusters.K; c++)
             {
                 double sum = 0;
-                var D = new double[Pixels.Length];
-                for (int i = 0; i < D.Length; i++)
+                var d = new double[Pixels.Length];
+                for (int i = 0; i < d.Length; i++)
                 {
                     // Для каждой точки мы считаем расстояние между точкой и центрами кластеров.
                     var x = Pixels[i];
@@ -240,15 +232,15 @@ namespace OftenColorBotLibrary.KMeans
                     // При наличии более одного кластера.
                     for (int j = 1; j < c; j++)
                     {
-                        double d = Euclidean.Distance(x, Clusters.Centroids[j]);
+                        double dMin = Euclidean.Distance(x, Clusters.Centroids[j]);
                         // Если есть расстояние между точкой и центром меньшее, то присваиваем его.
-                        if (d < min)
+                        if (dMin < min)
                         {
-                            min = d;
+                            min = dMin;
                         }
                     }
                     // Для каждой точки мы присваиваем самые минимальные расстояния между ней и центром.
-                    D[i] = min;
+                    d[i] = min;
                     // Также суммируем все расстояния.
                     sum += min;
                 }
@@ -260,20 +252,20 @@ namespace OftenColorBotLibrary.KMeans
                 }
                 else
                 {
-                    // Мы считаем вероятности для каждого растояния. Чем выше вероятность -- тем
+                    // Мы считаем вероятности для каждого расстояния. Чем выше вероятность -- тем
                     // больше шанса быть выбранным.
-                    for (int i = 0; i < D.Length; i++)
+                    for (int i = 0; i < d.Length; i++)
                     {
-                        D[i] /= sum;
+                        d[i] /= sum;
                     }
 
                     // В качестве ограничения используем рандом.
                     double uniform = random.NextDouble();
                     double cumulativeSum = 0;
                     // Находим почти самый дальний кластер.
-                    for (int i = 0; i < D.Length; i++)
+                    for (int i = 0; i < d.Length; i++)
                     {
-                        cumulativeSum += D[i];
+                        cumulativeSum += d[i];
                         if (uniform < cumulativeSum && !index.Contains(i))
                         {
                             idx = i;

@@ -21,8 +21,7 @@ namespace CourseWorkForm
         private const string tokenBot = "955523636:AAF3THwqIPSRat5q7TZUBow_B8QEvm8zGW8";
         // Создаем бота с нужным токеном бота.
         private static readonly TelegramBotClient bot = new TelegramBotClient(tokenBot);
-        // Сохраняем номер ВЕДУЩЕГО сообщения бота. 
-        private Message messageLast;
+
         // Костыль.
         string saveInfo = string.Empty;
 
@@ -87,7 +86,7 @@ namespace CourseWorkForm
                 // Загрузка фотки.
                 case "upload":
                     LogFromCallback(user, UtilitiesBot.State.S_Upload, UtilitiesBot.infoText["upload"],
-                        UtilitiesBot.keyboards["back"], eventUser);
+                        UtilitiesBot.keyboards["upload"], eventUser);
                     break;
                 // Настройки бота.
                 case "settings":
@@ -127,7 +126,7 @@ namespace CourseWorkForm
                     LogFromCallback(user, state, text, keyboard, eventUser);
                     break;
                 case "дальтоник":
-                    await bot.AnswerCallbackQueryAsync(eventUser.CallbackQuery.Id, 
+                    await bot.AnswerCallbackQueryAsync(eventUser.CallbackQuery.Id,
                         $"Извините, этот режим в разработке.");
                     break;
                 case "modePalette":
@@ -141,7 +140,7 @@ namespace CourseWorkForm
                 case "сверху":
                 case "без изображения":
                     user.Settings["modePalette"] = eventUser.CallbackQuery.Data;
-                    LogFromCallback(user, UtilitiesBot.State.S_Settings, 
+                    LogFromCallback(user, UtilitiesBot.State.S_Settings,
                         UtilitiesBot.infoText["setting"], UtilitiesBot.keyboards["setting"], eventUser);
                     break;
                 case "back":
@@ -189,7 +188,7 @@ namespace CourseWorkForm
         {
             try
             {
-                messageLast = await bot.EditMessageTextAsync(
+                Message messageL = await bot.EditMessageTextAsync(
                         chatId: eventUser.CallbackQuery.From.Id,
                         messageId: eventUser.CallbackQuery.Message.MessageId,
                         parseMode: ParseMode.Markdown,
@@ -197,6 +196,7 @@ namespace CourseWorkForm
                         replyMarkup: keyboard
                     );
 
+                user.MessageId = messageL.MessageId;
                 user.State = state;
                 // Выводим информацию в log о том, что изменилось состояние пользователя..
                 InfoInLog($"{DateTime.Now} For {user.Name} the state has been updated: {user.State}\n");
@@ -257,8 +257,61 @@ namespace CourseWorkForm
                 }
                 else
                 {
-                    BotErrorMessage(message);
+                    BotErrorMessage(message, user);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Какое сообщение нужно вернуть для переотправки сообщения в случае удаления.
+        /// Для этого мы смотрим на положение относительно меню пользователя и получаем всю
+        /// необходимую информацию.
+        /// </summary>
+        /// <param name="user">У какго пользвователя смотрим переписку.</param>
+        /// <param name="inlineKeyboard">Какие кнопки были.</param>
+        /// <param name="text">Какое текстовое содержание было.</param>
+        private void ReturnMessage(UserBot user, out InlineKeyboardMarkup inlineKeyboard,
+            out string text)
+        {
+            switch ((int)user.State)
+            {
+                case 0:
+                    inlineKeyboard = UtilitiesBot.keyboards["info"];
+                    text = UtilitiesBot.infoText["info"];
+                    break;
+                case 1:
+                    inlineKeyboard = UtilitiesBot.keyboards["upload"];
+                    text = UtilitiesBot.infoText["upload"];
+                    break;
+                case 2:
+                    inlineKeyboard = UtilitiesBot.keyboards["setting"];
+                    text = UtilitiesBot.infoText["setting"];
+                    break;
+                case 3:
+                    inlineKeyboard = UtilitiesBot.keyboards["numberOfPixels"];
+                    text = UtilitiesBot.infoText["numberOfPixels"];
+                    break;
+                case 4:
+                    inlineKeyboard = UtilitiesBot.keyboards["pickNumberPix"];
+                    text = UtilitiesBot.infoText["pickNumberPix"];
+                    break;
+                case 5:
+                    inlineKeyboard = UtilitiesBot.keyboards["start"];
+                    text = UtilitiesBot.infoText["start"];
+                    break;
+                case 6:
+                    inlineKeyboard = UtilitiesBot.keyboards["mode"];
+                    text = UtilitiesBot.infoText["mode"];
+                    break;
+                case 7:
+                    inlineKeyboard = UtilitiesBot.keyboards["modePalette"];
+                    text = UtilitiesBot.infoText["modePalette"];
+                    break;
+                default:
+                    // Это просто случайное, чтобы не ругалось, так как сюда невозможно зайти.
+                    inlineKeyboard = UtilitiesBot.keyboards["start"];
+                    text = "";
+                    break;
             }
         }
 
@@ -266,7 +319,7 @@ namespace CourseWorkForm
         /// Выводятся сообщения о ошибках работы.
         /// </summary>
         /// <param name="message">Какое событие мы обрабатываем.</param>
-        private async void BotErrorMessage(Message message)
+        private async void BotErrorMessage(Message message, UserBot user)
         {
             try
             {
@@ -279,26 +332,19 @@ namespace CourseWorkForm
 
                 // Мы удаляем сообщение, где было связанное с меню во избежание неудобства и 
                 // некорректности.
-                if (messageLast != null)
-                {
-                    await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
+                await bot.DeleteMessageAsync(message.Chat.Id, user.MessageId);
+                // Получаем удаленное сообщение.
+                ReturnMessage(user, out InlineKeyboardMarkup inlineKeyboard, out string text);
 
-                    messageLast = await bot.SendTextMessageAsync(
-                                        chatId: message.Chat,
-                                        parseMode: ParseMode.Markdown,
-                                        text: messageLast.Text,
-                                        replyMarkup: messageLast.ReplyMarkup
-                                    );
-                }
-                else
-                {
-                    await bot.SendTextMessageAsync(
-                                chatId: message.Chat,
-                                parseMode: ParseMode.Markdown,
-                                text: "*Мне стало плохо... Даже железяки могут подводить. Напишите, " +
-                                "пожалуйста, /start, для того, чтобы я заработал корректно на 100%.*"
-                            );
-                }
+                Message messageL = await bot.SendTextMessageAsync(
+                                    chatId: message.Chat,
+                                    parseMode: ParseMode.Markdown,
+                                    text: text,
+                                    replyMarkup: inlineKeyboard
+                                );
+
+                user.MessageId = messageL.MessageId;
+                WorkWithBD.UpdateUserAsync(user);
             }
             catch (Telegram.Bot.Exceptions.ApiRequestException error)
             {
@@ -367,22 +413,22 @@ namespace CourseWorkForm
                                 photo: memoryStream,
                                 caption: "Ваш результат.");
 
-                    if (messageLast != null)
+                    try
                     {
-                        try
-                        {
-                            await bot.DeleteMessageAsync(message.Chat.Id, messageLast.MessageId);
-                        }
-                        catch (Telegram.Bot.Exceptions.ApiRequestException error)
-                        {
-                            InfoInLog($"{DateTime.Now} {error.Message}");
-                        }
+                        await bot.DeleteMessageAsync(message.Chat.Id, user.MessageId);
+                    }
+                    catch (Telegram.Bot.Exceptions.ApiRequestException error)
+                    {
+                        InfoInLog($"{DateTime.Now} {error.Message}");
                     }
 
-                    messageLast = await bot.SendTextMessageAsync(
+                    Message messageL = await bot.SendTextMessageAsync(
                                         chatId: message.Chat,
                                         text: UtilitiesBot.infoText["upload"],
-                                        replyMarkup: UtilitiesBot.keyboards["back"]);
+                                        replyMarkup: UtilitiesBot.keyboards["upload"]);
+
+                    user.MessageId = messageL.MessageId;
+                    WorkWithBD.UpdateUserAsync(user);
                 }
                 //}
                 //else
@@ -463,15 +509,17 @@ namespace CourseWorkForm
                     InfoInLog($"{DateTime.Now} For {user.Name} the state " +
                             $"has been updated: {user.State}\n");
                     // Бот информирует пользователя о текущем разделе.
-                    messageLast = await bot.SendTextMessageAsync(
+                    Message messageL = await bot.SendTextMessageAsync(
                               chatId: message.Chat,
                               parseMode: ParseMode.Markdown,
                               text: UtilitiesBot.infoText["start"],
                               replyMarkup: UtilitiesBot.keyboards["start"]
                             );
+                    user.MessageId = messageL.MessageId;
+                    WorkWithBD.UpdateUserAsync(user);
                     break;
                 default:
-                    BotErrorMessage(message);
+                    BotErrorMessage(message, user);
                     break;
             }
         }

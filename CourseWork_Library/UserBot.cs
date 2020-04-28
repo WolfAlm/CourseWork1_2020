@@ -19,7 +19,7 @@ namespace OftenColorBotLibrary
         /// <summary>
         /// Последнее сообщение от бота, которое нужно будет удалять.
         /// </summary>
-        public long MessageId { get; set; }
+        public int MessageId { get; set; }
 
         /// <summary>
         /// В каком этапе меню находится пользователь. 

@@ -69,17 +69,6 @@ namespace OftenColorBotLibrary
             // Обновляем весь документ.
             await collectionBson.ReplaceOneAsync(new BsonDocument("ChatId", user.ChatId), 
                 user.ToBsonDocument());
-            //// Обновляем данные относительно этого пользователя.
-            //await collectionBson.UpdateOneAsync(new BsonDocument("ChatId", user.ChatId),
-            //    new BsonDocument("$set", new BsonDocument("State", user.State)));
-
-            //await collectionBson.UpdateOneAsync(new BsonDocument("ChatId", user.ChatId),
-            //    new BsonDocument("$set", new BsonDocument("Settings", new BsonDocument 
-            //    { 
-            //        {"mode", user.Settings["mode"].ToString() },
-            //        {"amount", user.Settings["amount"].ToString() },
-            //        {"modePalette", user.Settings["modePalette"].ToString() }
-            //    })));
         }
     }
 }

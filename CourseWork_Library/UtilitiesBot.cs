@@ -83,7 +83,7 @@ namespace OftenColorBotLibrary
                             new []
                             {
                                 InlineKeyboardButton.WithCallbackData("🔙 Назад", "back"),
-                                InlineKeyboardButton.WithCallbackData("📥 Перейти к загрузке фото", 
+                                InlineKeyboardButton.WithCallbackData("📥 Загрузка", 
                                     "upload"),
                             }
                     }),

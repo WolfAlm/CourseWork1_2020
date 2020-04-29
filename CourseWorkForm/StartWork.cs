@@ -487,7 +487,6 @@ namespace CourseWorkForm
             {
                 InfoInLog($"{DateTime.Now} Произошел конец света, упс." +
                     $"\n{error.Message}");
-                // TODO BIG FILES
             }
         }
 

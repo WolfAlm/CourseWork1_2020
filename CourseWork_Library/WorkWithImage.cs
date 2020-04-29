@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using OftenColorBotLibrary.KMeans;
 
 namespace OftenColorBotLibrary
@@ -82,27 +84,52 @@ namespace OftenColorBotLibrary
         static private Bitmap CreatePalette(Color[] colors, Bitmap image, string mode, 
             int xSize = 500, int ySize = 100)
         {
-            using (Graphics flagGraphics = Graphics.FromImage(image))
+            using (Graphics imageGraphics = Graphics.FromImage(image))
             {
+                imageGraphics.SmoothingMode = SmoothingMode.HighQuality;
+                imageGraphics.InterpolationMode = InterpolationMode.High;
+                imageGraphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                imageGraphics.CompositingQuality = CompositingQuality.HighQuality;
                 // Заливаем картинку белым цветом.
-                flagGraphics.Clear(Color.White);
+                imageGraphics.Clear(Color.White);
                 // Задаем начало координат.
                 int y = 4;
-                // По очереди создаем прямоугольники с определенным цветом.
+                
                 for (int i = 0; i < colors.Length; i++)
                 {
-                    flagGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, xSize, ySize);
+                    // По очереди создаем прямоугольники с определенным цветом.
+                    imageGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, xSize, ySize);
 
-                    // TODO: Сделать для разной палитры.
                     // Записывает текст на палитру.
                     if (mode == "профи")
                     {
-                        flagGraphics.FillRectangle(Brushes.White, new Rectangle(164, 30 + y, 180, 40));
-                        StringFormat stringFormat = new StringFormat();
-                        stringFormat.Alignment = stringFormat.LineAlignment = StringAlignment.Center;
-                        flagGraphics.DrawString($"#{colors[i].Name.Substring(2).ToUpper()}",
-                            new Font("Arial", 25), Brushes.Black,
-                            new Rectangle(164, 30 + y, 180, 40), stringFormat);
+                        // Высчитаем положение фигуры для помещения на центр.
+                        int xText = xSize / 2;
+                        int yText = ySize / 2;
+
+                        // Задаем форматирование текста.
+                        StringFormat stringFormat = new StringFormat()
+                        {
+                            Alignment = StringAlignment.Center,
+                            LineAlignment = StringAlignment.Center
+                        };
+                        // Считаем размер шрифта.
+                        float sizeFont = image.Height > 80 ? 30f : (float)(image.Height / 2 * 0.75);
+                        // Задаем шрифт.
+                        Font font = new Font("Arial Rounded MT", sizeFont, FontStyle.Bold);
+
+                        // Обрезываем канал A с помощью SubString. И рисуем текст.
+                        imageGraphics.DrawString($"#{colors[i].Name.Substring(2).ToUpper()}",
+                            font, Brushes.White, new Point(xText, yText + y), stringFormat);
+
+                        // Создаем текст для того, чтобы можно было обвести его.
+                        GraphicsPath penGraphics = new GraphicsPath();
+                        penGraphics.AddString($"#{colors[i].Name.Substring(2).ToUpper()}",
+                            font.FontFamily, (int)FontStyle.Bold, imageGraphics.DpiY * font.Size / 72,
+                            new Point(xText, yText + y), stringFormat);
+                        // Обводим ее черной ручкой.
+                        Pen pen = new Pen(Brushes.Black, 2f) { LineJoin = LineJoin.Round };
+                        imageGraphics.DrawPath(pen, penGraphics);
                     }
 
                     y += ySize + 4;
@@ -146,7 +173,7 @@ namespace OftenColorBotLibrary
                     {
                         startXoriginal = 200;
                     }
-
+                    
                     imagePalette = CreatePalette(colors, new Bitmap(200, imageOriginal.Height),
                             mode, 192, (imageOriginal.Height - 4 * (colors.Length + 1)) / colors.Length);
                     break;

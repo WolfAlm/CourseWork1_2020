@@ -85,7 +85,7 @@
   <ItemGroup>
     <Compile Include="AletrnativeBitmap.cs" />
     <Compile Include="KMeans\ClusterCollection.cs" />
-    <Compile Include="KMeans\EuclidianSquare.cs" />
+    <Compile Include="KMeans\EuclideanSquare.cs" />
     <Compile Include="KMeans\WorkKMeans.cs" />
     <Compile Include="UtilitiesBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

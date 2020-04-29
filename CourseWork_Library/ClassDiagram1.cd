@@ -11,7 +11,7 @@
   <Class Name="OftenColorBotLibrary.UserBot">
     <Position X="0.5" Y="4" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAAgAAABAAAAAQ=</HashCode>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAEgAAABAAAAAQ=</HashCode>
       <FileName>UserBot.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -57,13 +57,13 @@
     <Position X="4" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAKAAAAAAAAAAAAAAAAAABAACAAAAAAAAA=</HashCode>
-      <FileName>KMeans\EuclidianSquare.cs</FileName>
+      <FileName>KMeans\EuclideanSquare.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OftenColorBotLibrary.KMeans.WorkKMeans">
     <Position X="4" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACAABAEAgABAQAAAABAAAAAACAAAAAACQAAAAAACA=</HashCode>
+      <HashCode>AgACAABAEAgAAAAAQAABAAAAAAAAAAAAACQAAAAAAAA=</HashCode>
       <FileName>KMeans\WorkKMeans.cs</FileName>
     </TypeIdentifier>
   </Class>

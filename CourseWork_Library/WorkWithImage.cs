@@ -7,8 +7,43 @@ using OftenColorBotLibrary.KMeans;
 
 namespace OftenColorBotLibrary
 {
+    public class CollectionKnowColor
+    {
+        private static CollectionKnowColor instance;
+
+        public Color[] KnowColors { get; }
+
+        public double[][] RGBColors { get; }
+
+        private CollectionKnowColor()
+        {
+            KnownColor[] knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
+
+            KnowColors = new Color[knownColors.Length];
+            for (int i = 0; i < knownColors.Length; i++)
+            {
+                KnowColors[i] = Color.FromKnownColor(knownColors[i]);
+            }
+
+            RGBColors = new double[knownColors.Length][];
+            for (int i = 0; i < knownColors.Length; i++)
+            {
+                RGBColors[i] = new double[] { KnowColors[i].R, KnowColors[i].G, KnowColors[i].B };
+            }
+        }
+
+        public static CollectionKnowColor getInstance()
+        {
+            if (instance == null)
+                instance = new CollectionKnowColor();
+            return instance;
+        }
+    }
+
     public class WorkWithImage
     {
+        static EuclideanSquare euclideanSquare = new EuclideanSquare();
+
         /// <summary>
         /// Получает изображение и анализирует его на доминирующие цвета, после чего, исходя из
         /// параметров пользователя, будет сформировано изображение под требования пользователя.
@@ -101,7 +136,7 @@ namespace OftenColorBotLibrary
                     imageGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, xSize, ySize);
 
                     // Записывает текст на палитру.
-                    if (mode == "профи")
+                    if (mode == "профи" || mode == "дальтоник")
                     {
                         // Высчитаем положение фигуры для помещения на центр.
                         int xText = xSize / 2;
@@ -117,14 +152,17 @@ namespace OftenColorBotLibrary
                         float sizeFont = image.Height > 80 ? 30f : (float)(image.Height / 2 * 0.75);
                         // Задаем шрифт.
                         Font font = new Font("Arial Rounded MT", sizeFont, FontStyle.Bold);
+                        string info = mode == "профи" 
+                            ? $"#{colors[i].Name.Substring(2).ToUpper()}" 
+                            : GetNormalName(colors[i]);
 
                         // Обрезываем канал A с помощью SubString. И рисуем текст.
-                        imageGraphics.DrawString($"#{colors[i].Name.Substring(2).ToUpper()}",
+                        imageGraphics.DrawString(info,
                             font, Brushes.White, new Point(xText, yText + y), stringFormat);
 
                         // Создаем текст для того, чтобы можно было обвести его.
                         GraphicsPath penGraphics = new GraphicsPath();
-                        penGraphics.AddString($"#{colors[i].Name.Substring(2).ToUpper()}",
+                        penGraphics.AddString(info,
                             font.FontFamily, (int)FontStyle.Bold, imageGraphics.DpiY * font.Size / 72,
                             new Point(xText, yText + y), stringFormat);
                         // Обводим ее черной ручкой.
@@ -137,6 +175,15 @@ namespace OftenColorBotLibrary
             }
 
             return image;
+        }
+
+        static private string GetNormalName(Color color)
+        {
+            CollectionKnowColor collectionKnowColor = CollectionKnowColor.getInstance();
+            int index = euclideanSquare.PickClusterForPoint(new double[] { color.R, color.G, color.B }, 
+                collectionKnowColor.RGBColors);
+
+            return collectionKnowColor.KnowColors[index].Name;
         }
 
         /// <summary>

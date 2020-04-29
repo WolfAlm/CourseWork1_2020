@@ -108,6 +108,7 @@ namespace CourseWorkForm
                 // Выбранный режим.
                 case "профи":
                 case "любитель":
+                case "дальтоник":
                     user.Settings["mode"] = eventUser.CallbackQuery.Data;
 
                     if ((int)user.State == 6)
@@ -124,10 +125,6 @@ namespace CourseWorkForm
                     }
 
                     LogFromCallback(user, state, text, keyboard, eventUser);
-                    break;
-                case "дальтоник":
-                    await bot.AnswerCallbackQueryAsync(eventUser.CallbackQuery.Id,
-                        $"Извините, этот режим в разработке.");
                     break;
                 case "modePalette":
                     LogFromCallback(user, UtilitiesBot.State.S_ModePalette,

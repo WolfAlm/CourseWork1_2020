@@ -7,16 +7,10 @@
         /// </summary>
         /// <param name="clusters">Коллекция кластеров.</param>
         /// <param name="tolerance">На каком моменте нужно остановить вычисления.</param>
-        public EuclideanSquare(ClusterCollection clusters, double tolerance = 0.00001)
+        public EuclideanSquare(double tolerance = 0.00001)
         {
             Tolerance = tolerance;
-            Clusters = clusters;
         }
-
-        /// <summary>
-        /// Коллекция кластеров.
-        /// </summary>
-        private ClusterCollection Clusters { get; set; }
 
         /// <summary>
         /// На какой разнице между центроидами кластеров нужно остановить вычисления 
@@ -48,15 +42,15 @@
         /// </summary>
         /// <param name="pixel">Точка(пиксель), к которой подбирается наиближайший кластер.</param>
         /// <returns>Возвращает индекс кластера.</returns>
-        public int PickClusterForPoint(double[] pixel)
+        public int PickClusterForPoint(double[] pixel, double[][] centroids)
         {
             // Для начала вычисляется первый минимум.
-            double min = Distance(pixel, Clusters.Centroids[0]);
+            double min = Distance(pixel, centroids[0]);
             int indexMin = 0;
             // После чего вычисялем последующие расстояния от новых кластеров.
-            for (int i = 1; i < Clusters.K; i++)
+            for (int i = 1; i < centroids.Length; i++)
             {
-                double newMin = Distance(pixel, Clusters.Centroids[i]);
+                double newMin = Distance(pixel, centroids[i]);
 
                 if (newMin < min)
                 {

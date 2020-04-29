@@ -45,7 +45,7 @@ namespace OftenColorBotLibrary.KMeans
         {
             Pixels = pixels;
             Clusters = new ClusterCollection(k);
-            Euclidean = new EuclideanSquare(Clusters, tolerance);
+            Euclidean = new EuclideanSquare(tolerance);
 
             Labels = KMeansAlgorithm();
         }
@@ -130,7 +130,7 @@ namespace OftenColorBotLibrary.KMeans
                     double[] pixel = Pixels[i];
 
                     // Получаем ближайший кластер для этой точки.
-                    int c = labels[i] = Euclidean.PickClusterForPoint(pixel);
+                    int c = labels[i] = Euclidean.PickClusterForPoint(pixel, centroids);
 
                     // Теперь получаем центр этого ближайшего кластера.
                     double[] centroid = newCentroids[c];

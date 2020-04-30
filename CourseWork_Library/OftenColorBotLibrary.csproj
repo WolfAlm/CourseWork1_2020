@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AletrnativeBitmap.cs" />
+    <Compile Include="CreateImage\CollectionKnowColor.cs" />
     <Compile Include="KMeans\ClusterCollection.cs" />
     <Compile Include="KMeans\EuclideanSquare.cs" />
     <Compile Include="KMeans\WorkKMeans.cs" />
@@ -91,7 +92,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserBot.cs" />
     <Compile Include="WorkWithBD.cs" />
-    <Compile Include="WorkWithImage.cs" />
+    <Compile Include="CreateImage\WorkWithImage.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

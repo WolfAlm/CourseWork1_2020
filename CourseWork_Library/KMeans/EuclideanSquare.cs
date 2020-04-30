@@ -5,7 +5,6 @@
         /// <summary>
         /// Мы создаем евклидовую метрику на основе данных кластеров и tolerance
         /// </summary>
-        /// <param name="clusters">Коллекция кластеров.</param>
         /// <param name="tolerance">На каком моменте нужно остановить вычисления.</param>
         public EuclideanSquare(double tolerance = 0.00001)
         {
@@ -20,6 +19,7 @@
 
         /// <summary>
         /// Мы вычисляем расстояние между точкой(RGB) данного пикселя и центроидом кластера.
+        /// Его также мы используем для того, чтобы узнать название цвета.
         /// </summary>
         /// <param name="pixel">Точка пикселя.</param>
         /// <param name="centroid">Центроид кластера.</param>

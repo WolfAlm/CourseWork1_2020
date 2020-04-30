@@ -7,39 +7,6 @@ using OftenColorBotLibrary.KMeans;
 
 namespace OftenColorBotLibrary
 {
-    public class CollectionKnowColor
-    {
-        private static CollectionKnowColor instance;
-
-        public Color[] KnowColors { get; }
-
-        public double[][] RGBColors { get; }
-
-        private CollectionKnowColor()
-        {
-            KnownColor[] knownColors = (KnownColor[])Enum.GetValues(typeof(KnownColor));
-
-            KnowColors = new Color[knownColors.Length];
-            for (int i = 0; i < knownColors.Length; i++)
-            {
-                KnowColors[i] = Color.FromKnownColor(knownColors[i]);
-            }
-
-            RGBColors = new double[knownColors.Length][];
-            for (int i = 0; i < knownColors.Length; i++)
-            {
-                RGBColors[i] = new double[] { KnowColors[i].R, KnowColors[i].G, KnowColors[i].B };
-            }
-        }
-
-        public static CollectionKnowColor getInstance()
-        {
-            if (instance == null)
-                instance = new CollectionKnowColor();
-            return instance;
-        }
-    }
-
     public class WorkWithImage
     {
         static EuclideanSquare euclideanSquare = new EuclideanSquare();
@@ -70,6 +37,7 @@ namespace OftenColorBotLibrary
                 }
             }
 
+            // Создаем палитры по параметрам пользователя.
             if (user.Settings["modePalette"].ToString() == "без изображения")
             {
                 return CreatePalette(colors, 
@@ -115,6 +83,8 @@ namespace OftenColorBotLibrary
         /// <param name="colors">Из каких цветов создавать палитру.</param>
         /// <param name="image">Изображение, где будет записана палитра.</param>
         /// <param name="mode">Какой режим у пользователя.</param>
+        /// <param name="xSize">Размер прямоугольника в ширину.</param>
+        /// <param name="ySize">Размер прямоугольника цвета в высоте.</param>
         /// <returns>Возвращает палитру в виде изображения.</returns>
         static private Bitmap CreatePalette(Color[] colors, Bitmap image, string mode, 
             int xSize = 500, int ySize = 100)
@@ -136,7 +106,7 @@ namespace OftenColorBotLibrary
                     imageGraphics.FillRectangle(new SolidBrush(colors[i]), 4, y, xSize, ySize);
 
                     // Записывает текст на палитру.
-                    if (mode == "профи" || mode == "дальтоник")
+                    if (mode == "профи" || mode == "новичок")
                     {
                         // Высчитаем положение фигуры для помещения на центр.
                         int xText = xSize / 2;
@@ -149,25 +119,29 @@ namespace OftenColorBotLibrary
                             LineAlignment = StringAlignment.Center
                         };
                         // Считаем размер шрифта.
-                        float sizeFont = image.Height > 80 ? 30f : (float)(image.Height / 2 * 0.75);
+                        float sizeFont = mode == "новичок" 
+                            ? 14f 
+                            : ySize > 80 
+                            ? 30f 
+                            : (float)(ySize / 2 * 0.75);
+
                         // Задаем шрифт.
                         Font font = new Font("Arial Rounded MT", sizeFont, FontStyle.Bold);
                         string info = mode == "профи" 
                             ? $"#{colors[i].Name.Substring(2).ToUpper()}" 
                             : GetNormalName(colors[i]);
 
-                        // Обрезываем канал A с помощью SubString. И рисуем текст.
-                        imageGraphics.DrawString(info,
-                            font, Brushes.White, new Point(xText, yText + y), stringFormat);
-
-                        // Создаем текст для того, чтобы можно было обвести его.
+                        // Отрисовываем текст для того, чтобы можно было обвести его.
                         GraphicsPath penGraphics = new GraphicsPath();
+                        // Добавляем текст на картинку.
                         penGraphics.AddString(info,
-                            font.FontFamily, (int)FontStyle.Bold, imageGraphics.DpiY * font.Size / 72,
+                            font.FontFamily, (int)FontStyle.Bold, imageGraphics.DpiY * font.SizeInPoints / 72,
                             new Point(xText, yText + y), stringFormat);
                         // Обводим ее черной ручкой.
-                        Pen pen = new Pen(Brushes.Black, 2f) { LineJoin = LineJoin.Round };
+                        Pen pen = new Pen(Brushes.Black, 2) { LineJoin = LineJoin.Round };
                         imageGraphics.DrawPath(pen, penGraphics);
+                        // Заливаем белым фоном.
+                        imageGraphics.FillPath(new SolidBrush(Color.White), penGraphics);
                     }
 
                     y += ySize + 4;
@@ -177,6 +151,11 @@ namespace OftenColorBotLibrary
             return image;
         }
 
+        /// <summary>
+        /// Получает названия цветов по RGB.
+        /// </summary>
+        /// <param name="color">От какого цвета нужно получить название</param>
+        /// <returns>Возвращает результат определения названия.</returns>
         static private string GetNormalName(Color color)
         {
             CollectionKnowColor collectionKnowColor = CollectionKnowColor.getInstance();

@@ -108,7 +108,7 @@ namespace CourseWorkForm
                 // Выбранный режим.
                 case "профи":
                 case "любитель":
-                case "дальтоник":
+                case "новичок":
                     user.Settings["mode"] = eventUser.CallbackQuery.Data;
 
                     if ((int)user.State == 6)
@@ -405,10 +405,22 @@ namespace CourseWorkForm
 
                     image.Save(memoryStream, ImageFormat.Png);
                     memoryStream.Position = 0;
-                    await bot.SendPhotoAsync(
-                                chatId: message.Chat,
-                                photo: memoryStream,
-                                caption: "Ваш результат.");
+                    try
+                    {
+                        await bot.SendPhotoAsync(
+                                    chatId: message.Chat,
+                                    photo: memoryStream,
+                                    caption: "Ваш результат.");
+                    }
+                    catch (Telegram.Bot.Exceptions.ApiRequestException error)
+                    {
+                        await bot.SendTextMessageAsync(
+                                        chatId: message.Chat,
+                                        text: "Произошла непредвиденная ошибка, возможно, Ваш" +
+                                        " файл был огромным и я не смог Вам его отправить :(");
+
+                        InfoInLog($"{DateTime.Now} {error.Message}\n");
+                    }
 
                     try
                     {
@@ -416,7 +428,7 @@ namespace CourseWorkForm
                     }
                     catch (Telegram.Bot.Exceptions.ApiRequestException error)
                     {
-                        InfoInLog($"{DateTime.Now} {error.Message}");
+                        InfoInLog($"{DateTime.Now} {error.Message}\n");
                     }
 
                     Message messageL = await bot.SendTextMessageAsync(
@@ -478,7 +490,7 @@ namespace CourseWorkForm
             }
             catch (IOException)
             {
-                InfoInLog($"{DateTime.Now} Ошибка ввода-вывода.");
+                InfoInLog($"{DateTime.Now} Ошибка ввода-вывода.\n");
             }
             catch (Exception error)
             {

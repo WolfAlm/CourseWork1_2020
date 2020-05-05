@@ -44,6 +44,16 @@ namespace CourseWorkForm
             bot.OnCallbackQuery += BotClient_OnCallbackQuery;
             // Запускаем бота.
             bot.StartReceiving();
+
+            try
+            {
+                var res = bot.GetMeAsync().Result;
+                startedBot.Text = "БОТ УСПЕШНО ЗАПУЩЕН!";
+            }
+            catch (AggregateException)
+            {
+                startedBot.Text = "БОТ, В СВЯЗИ С ОШИБКАМИ, НЕ БЫЛ ЗАПУЩЕН!";
+            }
         }
 
         /// <summary>
@@ -256,6 +266,10 @@ namespace CourseWorkForm
                 {
                     BotErrorMessage(message, user);
                 }
+            }
+            else
+            {
+                BotErrorMessage(message, user);
             }
         }
 

@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace OftenColorBotLibrary
 {
-    public class CollectionKnowColor
+    internal class CollectionKnowColor
     {
         // Делаем паттерн синглтона.
         private static CollectionKnowColor instance;
